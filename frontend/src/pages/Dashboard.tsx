@@ -50,6 +50,12 @@ export function Dashboard() {
 
   const busy = generate.state.status === "loading" || result.state.status === "loading";
 
+  // Once a result exists - either just generated, or loaded directly via
+  // /assessments/:id or a lookup - the generate/open-existing forms give
+  // way to a clean, result-only view. Reuses the existing generate/result
+  // state rather than adding a new "has a result" flag.
+  const hasResult = generate.state.status === "success" || result.state.status === "success";
+
   // A direct visit to /assessments/:id (a shared link, or a refresh) loads
   // that result once on mount. Read via a lazy initializer, not a reactive
   // dependency, since the navigate() below updates the URL itself and must
@@ -109,16 +115,18 @@ export function Dashboard() {
         </>
       )}
 
-      <div className="console-layer">
-        <SectionCard
-          titleIcon={<SlidersIcon />}
-          title="Create an assessment"
-          tagline="Same standards. New questions."
-          className={`console-panel${busy ? " card--sent" : ""}`}
-        >
-          <GenerateForm onSubmit={handleGenerate} disabled={busy} />
-        </SectionCard>
-      </div>
+      {!hasResult && (
+        <div className="console-layer">
+          <SectionCard
+            titleIcon={<SlidersIcon />}
+            title="Create an assessment"
+            tagline="Same standards. New questions."
+            className={`console-panel${busy ? " card--sent" : ""}`}
+          >
+            <GenerateForm onSubmit={handleGenerate} disabled={busy} />
+          </SectionCard>
+        </div>
+      )}
 
       {generate.state.status === "loading" && <LoadingState />}
       {generate.state.status === "error" && <ErrorBanner error={generate.state.error} />}
@@ -130,15 +138,17 @@ export function Dashboard() {
         />
       )}
 
-      <div className="console-layer">
-        <SectionCard
-          titleIcon={<FolderIcon />}
-          title="Open an existing assessment"
-          className="console-panel console-panel--secondary"
-        >
-          <ExistingResultForm onLookup={handleLookup} disabled={busy} />
-        </SectionCard>
-      </div>
+      {!hasResult && (
+        <div className="console-layer">
+          <SectionCard
+            titleIcon={<FolderIcon />}
+            title="Open an existing assessment"
+            className="console-panel console-panel--secondary"
+          >
+            <ExistingResultForm onLookup={handleLookup} disabled={busy} />
+          </SectionCard>
+        </div>
+      )}
 
       {result.state.status === "loading" && generate.state.status !== "loading" && (
         <LoadingState title="Loading result" hint="Fetching the generated paper and memo." />
