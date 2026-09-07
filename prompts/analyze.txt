@@ -1,0 +1,15 @@
+NOTE: Not currently invoked.
+
+Phase 1's reference analysis (src/analysis/reference_analyzer.py) is fully
+deterministic (regex/heuristic extraction over the QCTO Learner Guide
+front-matter format) rather than LLM-based, per the project's "never trust
+raw LLM output for structural facts" principle - qualification title, NQF
+levels, credits, and knowledge-topic weightings are unambiguous, structured
+data that a parser extracts more reliably and reproducibly than an LLM would.
+
+This file is retained as a placeholder for a possible future enhancement:
+using an LLM to produce a short, clearly-labeled qualitative summary of each
+module's free-text "Purpose" paragraph (for human readability only - never
+as an input to numeric blueprint fields). If implemented, that prompt would
+go here, with the same untrusted-input handling as the other prompts in this
+directory (source text passed as DATA, never as instructions).

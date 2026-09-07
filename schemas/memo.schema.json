@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "memo.schema.json",
+  "title": "Mock EISA Marking Memo",
+  "type": "object",
+  "required": ["memo_id", "paper_id", "status_disclaimer", "total_marks", "sections"],
+  "properties": {
+    "memo_id": {"type": "string", "minLength": 1, "maxLength": 200},
+    "paper_id": {"type": "string", "minLength": 1, "maxLength": 200},
+    "status_disclaimer": {"type": "string", "minLength": 10, "maxLength": 2000},
+    "total_marks": {"type": "integer", "minimum": 1, "maximum": 2000},
+    "generation_meta": {"type": "object"},
+    "sections": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "required": ["id", "questions"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1, "maxLength": 50},
+          "questions": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 10,
+            "items": {"$ref": "#/definitions/memo_question"}
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "criterion": {
+      "type": "object",
+      "required": ["description", "marks"],
+      "properties": {
+        "description": {"type": "string", "minLength": 1, "maxLength": 1000, "description": "What earns these marks."},
+        "marks": {"type": "integer", "minimum": 1, "maximum": 100},
+        "non_awarding_notes": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "What does NOT earn marks for this criterion."
+        }
+      }
+    },
+    "memo_question": {
+      "type": "object",
+      "required": ["question_id", "total_marks", "criteria", "model_answer"],
+      "properties": {
+        "question_id": {"type": "string", "minLength": 1, "maxLength": 50},
+        "total_marks": {"type": "integer", "minimum": 1, "maximum": 500},
+        "model_answer": {"type": "string", "minLength": 1, "maxLength": 5000},
+        "criteria": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {"$ref": "#/definitions/criterion"}
+        },
+        "accepted_alternatives": {
+          "type": "array",
+          "items": {"type": "string", "maxLength": 1000},
+          "maxItems": 20,
+          "description": "Technically valid alternative answers/approaches that must also receive full/partial credit."
+        },
+        "partial_credit_guidance": {"type": "string", "maxLength": 2000},
+        "penalties": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Only populated where a specific penalty is justified (e.g. security anti-pattern)."
+        },
+        "sub_questions": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "required": ["id", "total_marks", "criteria", "model_answer"],
+            "properties": {
+              "id": {"type": "string", "maxLength": 20},
+              "total_marks": {"type": "integer", "minimum": 1, "maximum": 100},
+              "model_answer": {"type": "string", "minLength": 1, "maxLength": 5000},
+              "criteria": {
+                "type": "array",
+                "maxItems": 20,
+                "items": {"$ref": "#/definitions/criterion"}
+              },
+              "accepted_alternatives": {
+                "type": "array",
+                "items": {"type": "string", "maxLength": 1000},
+                "maxItems": 20
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

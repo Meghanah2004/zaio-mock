@@ -1,0 +1,89 @@
+{
+  "qualification_key": "software_developer",
+  "_assumption_notice": "Every numeric value in this file is an IMPLEMENTATION ASSUMPTION for Phase 1. None of these numbers (duration, total marks, section marks, pass mark) are stated in the supplied reference material - see docs/reference-analysis.md section 5 and docs/DESIGN.md. They exist so the pipeline is reproducible and machine-readable, not because they were discovered in sdev/.",
+  "paper_title": "Mock EISA Paper - Software Developer (Practice/Formative Use Only)",
+  "duration_minutes": 180,
+  "total_marks": 100,
+  "pass_mark_percent": 50,
+  "candidate_instructions": [
+    "This is a MOCK / PRACTICE assessment for formative preparation. It is NOT an official QCTO External Integrated Summative Assessment (EISA) and carries no official qualification status.",
+    "Answer ALL questions in ALL sections.",
+    "Read each scenario carefully before answering; several questions integrate more than one competency area.",
+    "Write code answers in plain text/pseudocode unless a specific language is requested; assume standard syntax for the language named in the question.",
+    "Show your reasoning for calculation and design questions - partial credit is available and requires visible working.",
+    "Manage your time: indicative mark values show the expected effort per question.",
+    "No electronic devices other than those explicitly permitted by your facilitator may be used."
+  ],
+  "_outcome_mapping_notice": "`outcomes` (built from km_refs by src/generation/blueprint.py) is each section's FULL thematic outcome list - what the section's underlying modules cover in general. `required_outcomes` here is a deliberately narrower, hand-curated subset: the specific outcomes a generated question for this section MUST demonstrably cover. This distinction exists precisely so a single question cannot silently claim credit for topics it doesn't actually test - see docs/DESIGN.md, 'Outcome mapping: explicit subsets, not section-wide copies.' `occupational_context` is set explicitly per section below (rather than derived from km_refs[0]) so it always describes what this section's question is actually about.",
+  "sections": [
+    {
+      "id": "A",
+      "title": "Programming Fundamentals and Logical Reasoning",
+      "km_refs": ["KM-04", "KM-05"],
+      "marks": 15,
+      "difficulty": "foundational",
+      "question_types": ["short_answer", "code_analysis"],
+      "required_outcomes": ["KM-04-KT02", "KM-04-KT07", "KM-04-KT09", "KM-04-KT11", "KM-05-KT02"],
+      "occupational_context": "Junior developer performing estimation and calculation tasks before coding a feature."
+    },
+    {
+      "id": "B",
+      "title": "Front-End Web Development (HTML5, CSS, JavaScript, OOP)",
+      "km_refs": ["KM-06"],
+      "marks": 30,
+      "difficulty": "intermediate",
+      "question_types": ["code_writing", "code_analysis", "scenario_extended"],
+      "required_outcomes": ["KM-06-KT02", "KM-06-KT06", "KM-06-KT07", "KM-06-KT08"],
+      "occupational_context": "Front-end developer building and styling an interactive web feature for a client site."
+    },
+    {
+      "id": "C",
+      "title": "Systems Modelling with UML",
+      "km_refs": ["KM-07"],
+      "marks": 15,
+      "difficulty": "intermediate",
+      "question_types": ["design_task"],
+      "required_outcomes": ["KM-07-KT04", "KM-07-KT07"],
+      "occupational_context": "Developer documenting a system design for a team using UML before implementation."
+    },
+    {
+      "id": "D",
+      "title": "Data, Databases and Querying",
+      "km_refs": ["KM-08"],
+      "marks": 20,
+      "difficulty": "intermediate",
+      "question_types": ["code_writing", "scenario_short_answer"],
+      "required_outcomes": ["KM-08-KT01", "KM-08-KT02", "KM-08-KT03", "KM-08-KT04", "KM-08-KT05"],
+      "occupational_context": "Developer designing, querying and maintaining a relational database for an application."
+    },
+    {
+      "id": "E",
+      "title": "SDLC, Algorithms and Secure Coding",
+      "km_refs": ["KM-09"],
+      "marks": 15,
+      "difficulty": "advanced",
+      "question_types": ["scenario_extended", "short_answer"],
+      "required_outcomes": ["KM-09-KT02", "KM-09-KT09", "KM-09-KT16", "KM-09-KT18"],
+      "occupational_context": "Developer working through the SDLC and applying secure-coding practice on a real feature."
+    },
+    {
+      "id": "F",
+      "title": "Workplace Integration and Professional Practice",
+      "km_refs": ["KM-09", "KM-10", "KM-11", "KM-12"],
+      "marks": 5,
+      "difficulty": "foundational",
+      "question_types": ["scenario_short_answer"],
+      "required_outcomes": ["KM-10-KT01", "KM-10-KT02", "KM-10-KT04"],
+      "occupational_context": "Developer navigating a workplace governance, legislative, or ethical judgement call in a routine task."
+    }
+  ],
+  "questions_per_section": 1,
+  "llm": {
+    "default_provider": "mock",
+    "anthropic_model": "claude-sonnet-5"
+  },
+  "novelty": {
+    "similarity_warn_threshold": 0.35,
+    "similarity_flag_threshold": 0.55
+  }
+}

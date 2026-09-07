@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "paper.schema.json",
+  "title": "Mock EISA Paper",
+  "type": "object",
+  "required": [
+    "paper_id",
+    "qualification",
+    "nqf_level",
+    "status_disclaimer",
+    "duration_minutes",
+    "total_marks",
+    "instructions",
+    "sections"
+  ],
+  "properties": {
+    "paper_id": {"type": "string", "minLength": 1, "maxLength": 200},
+    "qualification": {"type": "string", "minLength": 1, "maxLength": 500},
+    "nqf_level": {"type": ["array", "integer"]},
+    "status_disclaimer": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 2000,
+      "description": "Must explicitly state this is a mock/practice paper, not an official EISA/QCTO instrument."
+    },
+    "duration_minutes": {"type": "integer", "minimum": 1, "maximum": 1440},
+    "total_marks": {"type": "integer", "minimum": 1, "maximum": 2000},
+    "instructions": {
+      "type": "array",
+      "items": {"type": "string", "maxLength": 2000},
+      "minItems": 1,
+      "maxItems": 50
+    },
+    "generation_meta": {
+      "type": "object",
+      "description": "Reproducibility metadata: seed, paper number, provider used, blueprint reference."
+    },
+    "sections": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "marks", "outcomes", "competencies", "difficulty", "question_types", "questions"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1, "maxLength": 50},
+          "title": {"type": "string", "minLength": 1, "maxLength": 300},
+          "marks": {"type": "integer", "minimum": 1, "maximum": 500},
+          "outcomes": {"type": "array", "items": {"type": "string", "maxLength": 100}, "maxItems": 100},
+          "competencies": {"type": "array", "items": {"type": "string", "maxLength": 300}, "maxItems": 100},
+          "difficulty": {"type": "string", "enum": ["foundational", "intermediate", "advanced"]},
+          "question_types": {"type": "array", "items": {"type": "string", "maxLength": 100}, "maxItems": 20},
+          "questions": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 10,
+            "items": {"$ref": "#/definitions/question"}
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "question": {
+      "type": "object",
+      "required": [
+        "id", "section_id", "question_number", "type", "question", "marks",
+        "difficulty", "outcomes", "competencies", "expected_response_type"
+      ],
+      "properties": {
+        "id": {"type": "string", "minLength": 1, "maxLength": 50},
+        "section_id": {"type": "string", "minLength": 1, "maxLength": 50},
+        "question_number": {"type": "string", "minLength": 1, "maxLength": 20},
+        "type": {
+          "type": "string",
+          "enum": ["scenario_short_answer", "scenario_extended", "code_analysis", "code_writing", "design_task", "short_answer"]
+        },
+        "scenario": {"type": ["string", "null"], "maxLength": 5000},
+        "question": {"type": "string", "minLength": 1, "maxLength": 5000},
+        "sub_questions": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "required": ["id", "prompt", "marks"],
+            "properties": {
+              "id": {"type": "string", "maxLength": 20},
+              "prompt": {"type": "string", "minLength": 1, "maxLength": 3000},
+              "marks": {"type": "integer", "minimum": 1, "maximum": 100},
+              "expected_response_type": {"type": "string", "maxLength": 200}
+            }
+          }
+        },
+        "marks": {"type": "integer", "minimum": 1, "maximum": 500},
+        "difficulty": {"type": "string", "enum": ["foundational", "intermediate", "advanced"]},
+        "outcomes": {"type": "array", "items": {"type": "string", "maxLength": 100}, "minItems": 1, "maxItems": 100},
+        "competencies": {"type": "array", "items": {"type": "string", "maxLength": 300}, "minItems": 1, "maxItems": 100},
+        "expected_response_type": {"type": "string", "minLength": 1, "maxLength": 200}
+      }
+    }
+  }
+}

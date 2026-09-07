@@ -1,0 +1,15 @@
+NOTE: Not currently invoked.
+
+The assessment blueprint (src/generation/blueprint.py) is produced
+deterministically by merging artifacts/reference-analysis.json (facts about
+the qualification) with configs/<qualification>.json (explicitly-labeled
+implementation assumptions for duration/marks/sections). There is no LLM call
+in this stage: mark totals, section counts, and outcome coverage are
+governance data that must be exact and reproducible, not generated text.
+
+This file is retained as a placeholder in case a future phase wants an LLM
+to *propose* a candidate section/mark structure for human review (e.g. when
+a real QCTO assessment specification becomes available and needs to be
+reconciled with this pipeline's config format). Any such prompt must still
+pass its output through the same deterministic validation as everything else
+in src/validation/ before it could be trusted as the actual blueprint.

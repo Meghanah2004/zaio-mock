@@ -1,0 +1,533 @@
+{
+  "memo_id": "mock-eisa-memo-software_developer-paper-01",
+  "paper_id": "mock-eisa-software_developer-paper-01",
+  "status_disclaimer": "MOCK / PRACTICE ASSESSMENT ONLY. This paper is generated for formative self-assessment and exam-preparation purposes. It is NOT an official QCTO External Integrated Summative Assessment (EISA), is not moderated by MICT SETA, and confers no qualification status or credit.",
+  "total_marks": 100,
+  "sections": [
+    {
+      "id": "A",
+      "questions": [
+        {
+          "question_id": "Q-A1",
+          "total_marks": 15,
+          "model_answer": "See per-part model answers below.",
+          "criteria": [
+            {
+              "description": "See per-part criteria in sub_questions.",
+              "marks": 15
+            }
+          ],
+          "accepted_alternatives": [],
+          "partial_credit_guidance": "Award marks per part independently. For worked calculations, award method marks even if the final numeric answer is wrong due to a single arithmetic slip, provided the method/order of operations is correct.",
+          "sub_questions": [
+            {
+              "id": "1",
+              "total_marks": 3,
+              "model_answer": "10110(2) = 1x2^4 + 0x2^3 + 1x2^2 + 1x2^1 + 0x2^0 = 16 + 0 + 4 + 2 + 0 = 22",
+              "criteria": [
+                {
+                  "description": "Correct positional/place-value setup shown",
+                  "marks": 1
+                },
+                {
+                  "description": "Correct arithmetic at each place value",
+                  "marks": 1
+                },
+                {
+                  "description": "Correct final decimal value",
+                  "marks": 1
+                }
+              ],
+              "accepted_alternatives": [
+                "Doubling method (start from leftmost bit, double-and-add) reaching the same final value."
+              ]
+            },
+            {
+              "id": "2",
+              "total_marks": 4,
+              "model_answer": "23 % 4 = 3; 3 * 2 = 6; 6 - 5 = 1; 1 + 1 = 2. distance = 2.",
+              "criteria": [
+                {
+                  "description": "Modulus evaluated correctly first (correct precedence)",
+                  "marks": 1
+                },
+                {
+                  "description": "Multiplication evaluated before remaining addition/subtraction",
+                  "marks": 1
+                },
+                {
+                  "description": "Left-to-right evaluation of remaining +/- operators",
+                  "marks": 1
+                },
+                {
+                  "description": "Correct final value stated",
+                  "marks": 1
+                }
+              ],
+              "accepted_alternatives": []
+            },
+            {
+              "id": "3",
+              "total_marks": 4,
+              "model_answer": "speed=50,55: not >60, no print; speed=60: not >60 (boundary), no print; speed=65: >60 -> print 'over limit'. Output: over limit (once).",
+              "criteria": [
+                {
+                  "description": "Correct loop boundary (correct number of iterations)",
+                  "marks": 1
+                },
+                {
+                  "description": "Correct condition evaluation at each iteration",
+                  "marks": 2
+                },
+                {
+                  "description": "Correct final output sequence/value stated",
+                  "marks": 1
+                }
+              ],
+              "accepted_alternatives": [
+                "Answer presented as a trace table instead of prose - equally acceptable."
+              ]
+            },
+            {
+              "id": "4",
+              "total_marks": 4,
+              "model_answer": "Python raises this TypeError because `+` between a `str` and a `float` is not defined - Python does not implicitly convert numbers to strings the way some other languages (e.g. JavaScript) do. Fix: `log = \"Trip length: \" + str(12.3) + \" km\"` (or `f\"Trip length: {12.3} km\"`), both of which produce `\"Trip length: 12.3 km\"`.",
+              "criteria": [
+                {
+                  "description": "Correctly explains that Python's `+` operator does not implicitly convert a float to a string (unlike some other languages)",
+                  "marks": 2
+                },
+                {
+                  "description": "Provides a corrected line that runs successfully and produces the exact target string",
+                  "marks": 2
+                }
+              ],
+              "accepted_alternatives": [
+                "str(), f-strings, .format(), or % formatting are all acceptable ways to perform the conversion."
+              ],
+              "non_awarding_notes": "An answer that only says 'you can't add a string and a number' without naming Python specifically, or that describes JavaScript's automatic string-coercion behaviour instead of Python's, does not earn the explanation marks - the question is now explicitly scoped to Python, where this code genuinely does raise an error."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "questions": [
+        {
+          "question_id": "Q-B1",
+          "total_marks": 30,
+          "model_answer": "See per-part model answers below.",
+          "criteria": [
+            {
+              "description": "See per-part criteria in sub_questions.",
+              "marks": 30
+            }
+          ],
+          "accepted_alternatives": [],
+          "partial_credit_guidance": "Working but inelegant code that satisfies the functional requirement of a part earns full marks for that part; deduct only for the specific missing/incorrect behaviour named in that part's criteria, not for style choices (e.g. var vs let, quote style).",
+          "sub_questions": [
+            {
+              "id": "1",
+              "total_marks": 6,
+              "model_answer": "The task's stated requirement is that at least one interest-area checkbox MUST be checked before the form submits. A <form> containing <input type=\"text\" name=\"fullName\" required>, <input type=\"email\" name=\"email\" required>, and one <input type=\"checkbox\"> per interest area, each paired with a <label>, satisfies the markup part of this. However, HTML5's `required` attribute only ever validates a single element's own value - the browser has no built-in concept of 'at least one checked' across a group of checkboxes, so this specific requirement CANNOT be enforced by HTML5 attributes alone. Enforcing it requires JavaScript (e.g. checking on submit that at least one checkbox in the group is checked) or a workaround such as a single hidden required proxy input tied to the group's state.",
+              "criteria": [
+                {
+                  "description": "Uses a <form> with semantic, appropriately-labelled <input> elements",
+                  "marks": 2
+                },
+                {
+                  "description": "Uses type=\"email\" and the required attribute correctly on the name/email fields",
+                  "marks": 2
+                },
+                {
+                  "description": "Checkboxes correctly implemented and labelled for the interest areas",
+                  "marks": 1
+                },
+                {
+                  "description": "Correctly states that HTML5 cannot natively enforce the stated 'at least one checkbox selected' requirement across a group, and correctly identifies that JavaScript (or an equivalent workaround) is needed to enforce it",
+                  "marks": 1
+                }
+              ],
+              "accepted_alternatives": [
+                "Use of <label for=...> or wrapping <label> - either is acceptable.",
+                "Mentioning aria-required/role=group as an accessibility improvement is a bonus, not a substitute for the correct answer that native HTML5 validation cannot enforce this rule."
+              ],
+              "non_awarding_notes": "Claiming that HTML5 attributes alone CAN enforce 'at least one checkbox selected' earns 0 for the fourth criterion, regardless of how the checkboxes are marked up."
+            },
+            {
+              "id": "2",
+              "total_marks": 6,
+              "model_answer": "`.form-field { display: flex; flex-direction: column; }` by default, then `@media (min-width: 768px) { .form-field { flex-direction: row; align-items: center; } }`. Flexbox suits this because it lets the same markup reflow between a stacked and inline layout by changing a single property (flex-direction) rather than rewriting positioning rules.",
+              "criteria": [
+                {
+                  "description": "Correct default (mobile-first) stacked flex layout",
+                  "marks": 2
+                },
+                {
+                  "description": "Correct media query breakpoint and row layout for wider screens",
+                  "marks": 3
+                },
+                {
+                  "description": "Sensible one-sentence justification for choosing Flexbox",
+                  "marks": 1
+                }
+              ],
+              "accepted_alternatives": [
+                "Any reasonable breakpoint value (e.g. 700px-800px) with correct reasoning is acceptable; 768px is the suggested convention, not a strict requirement.",
+                "CSS Grid used instead of Flexbox, provided the same responsive behaviour is achieved and justified - award full marks for the layout, partial for the Flexbox-specific justification."
+              ]
+            },
+            {
+              "id": "3",
+              "total_marks": 8,
+              "model_answer": "```javascript\nform.addEventListener('submit', function(e) {\n  e.preventDefault();\n  const email = form.email.value;\n  const valid = email.includes('@') && email.indexOf('.', email.indexOf('@')) > -1;\n  if (!valid) {\n    errorEl.textContent = 'Please enter a valid email address.';\n  } else {\n    errorEl.textContent = '';\n    console.log(Object.fromEntries(new FormData(form)));\n  }\n});\n```",
+              "criteria": [
+                {
+                  "description": "Correctly attaches a submit event listener and calls preventDefault()",
+                  "marks": 2
+                },
+                {
+                  "description": "Validates the email field per the stated rule (contains '@' and a '.' after it)",
+                  "marks": 3
+                },
+                {
+                  "description": "Displays an inline error without alert() when invalid",
+                  "marks": 2
+                },
+                {
+                  "description": "Logs form data to the console when valid",
+                  "marks": 1
+                }
+              ],
+              "accepted_alternatives": [
+                "Use of a regular expression for email validation instead of includes()/indexOf(), provided it correctly rejects/accepts the same cases.",
+                "Reading field values via `document.getElementById` instead of the form's named-element access - equally acceptable."
+              ],
+              "non_awarding_notes": "Using alert() for the error message earns 0 for the 'inline error' criterion even if the validation logic is correct."
+            },
+            {
+              "id": "4",
+              "total_marks": 10,
+              "model_answer": "```javascript\nclass Member {\n  constructor(name, booksRead) {\n    this.name = name;\n    this._booksRead = booksRead;\n  }\n  get booksRead() {\n    return this._booksRead;\n  }\n  set booksRead(value) {\n    if (value < 0) throw new Error('booksRead cannot be negative');\n    this._booksRead = value;\n  }\n}\n```\nThis demonstrates ENCAPSULATION: the internal field is hidden behind an underscore-prefixed (or truly private #-prefixed) property, and all reads/writes are mediated by the getter/setter, which is what lets the class enforce the 'no negative values' invariant in one place.",
+              "criteria": [
+                {
+                  "description": "Correct ES6 class syntax with constructor",
+                  "marks": 3
+                },
+                {
+                  "description": "Correct getter implementation",
+                  "marks": 2
+                },
+                {
+                  "description": "Setter correctly rejects/handles negative values",
+                  "marks": 3
+                },
+                {
+                  "description": "Correctly names encapsulation and gives a valid reason it matters here",
+                  "marks": 2
+                }
+              ],
+              "accepted_alternatives": [
+                "Use of true private fields (`#hoursPledged`) instead of the underscore convention.",
+                "Setter that clamps to 0 or ignores the invalid assignment instead of throwing, provided the negative value never becomes the stored value.",
+                "Candidate names a different but defensibly-linked principle (e.g. 'data hiding') if their justification correctly describes encapsulation's mechanism."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "questions": [
+        {
+          "question_id": "Q-C1",
+          "total_marks": 15,
+          "model_answer": "See per-part model answers below.",
+          "criteria": [
+            {
+              "description": "See per-part criteria in sub_questions.",
+              "marks": 15
+            }
+          ],
+          "accepted_alternatives": [],
+          "partial_credit_guidance": "This is a design task with no single correct diagram. Award marks for correct modelling concepts and internally consistent relationships/flow, not for matching an exact reference diagram.",
+          "sub_questions": [
+            {
+              "id": "1",
+              "total_marks": 8,
+              "model_answer": "Patient(patientId, name, contactNumber; requestAppointment(), cancelAppointment()); Doctor(doctorId, name, specialty; isAvailable(), acceptAppointment()); Appointment(appointmentId, dateTime, status; notifyPatient(), expire()). Associations: Patient 1..* Appointment (a patient may have many appointments), Appointment *..1 Doctor (each appointment is with exactly one doctor, a doctor may have many appointments)",
+              "criteria": [
+                {
+                  "description": "At least 3 plausible attributes per class (all three classes)",
+                  "marks": 3
+                },
+                {
+                  "description": "At least 2 plausible methods per class (all three classes)",
+                  "marks": 2
+                },
+                {
+                  "description": "Correct associations identified between the classes",
+                  "marks": 2
+                },
+                {
+                  "description": "Correct/plausible multiplicities stated (e.g. one-to-many)",
+                  "marks": 1
+                }
+              ],
+              "accepted_alternatives": [
+                "Any reasonably named attributes/methods that a competent developer would recognise as relevant - exact names are not required, only correct concepts and correct multiplicity direction."
+              ]
+            },
+            {
+              "id": "2",
+              "total_marks": 7,
+              "model_answer": "1) Patient requests an Appointment slot via BookingService. 2) BookingService checks Doctor's schedule. 3) Slot is full, so BookingService creates a waitlist entry for the Patient. 4) When a slot opens, BookingService updates the schedule and calls notifyPatient() on the next waitlisted Patient.",
+              "criteria": [
+                {
+                  "description": "Correct initiating actor and first message",
+                  "marks": 2
+                },
+                {
+                  "description": "Correctly identifies the 'currently unavailable' branch (on loan / slot full) and the waitlist step",
+                  "marks": 3
+                },
+                {
+                  "description": "Includes a service/coordinator object mediating between the actor and the resource",
+                  "marks": 1
+                },
+                {
+                  "description": "Correct final notification step once availability changes",
+                  "marks": 1
+                }
+              ],
+              "accepted_alternatives": [
+                "Any logically consistent object names, provided the sequence of decisions and the waitlist/notify mechanism is correct."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D",
+      "questions": [
+        {
+          "question_id": "Q-D1",
+          "total_marks": 20,
+          "model_answer": "See per-part model answers below.",
+          "criteria": [
+            {
+              "description": "See per-part criteria in sub_questions.",
+              "marks": 20
+            }
+          ],
+          "accepted_alternatives": [],
+          "partial_credit_guidance": "Accept any standard SQL dialect (MySQL, PostgreSQL, SQLite, SQL Server) as long as the syntax is internally consistent and correct for that dialect.",
+          "sub_questions": [
+            {
+              "id": "1",
+              "total_marks": 6,
+              "model_answer": "CREATE TABLE Depots (depot_id INT PRIMARY KEY, name VARCHAR(100) NOT NULL, contact_email VARCHAR(100));\nCREATE TABLE Vehicles (vehicle_id INT PRIMARY KEY, registration VARCHAR(20) NOT NULL, km_since_service INT NOT NULL, service_interval_km INT NOT NULL, depot_id INT, FOREIGN KEY (depot_id) REFERENCES Depots(depot_id));",
+              "criteria": [
+                {
+                  "description": "Both tables created with sensible, correctly-typed columns",
+                  "marks": 2
+                },
+                {
+                  "description": "Primary key correctly defined on each table",
+                  "marks": 2
+                },
+                {
+                  "description": "Foreign key correctly defined linking the two tables",
+                  "marks": 2
+                }
+              ],
+              "accepted_alternatives": [
+                "Any reasonable equivalent data types for the target SQL dialect (e.g. SERIAL vs INT for the PK, TEXT vs VARCHAR).",
+                "AUTO_INCREMENT/IDENTITY on the primary key is a valid addition, not a requirement."
+              ]
+            },
+            {
+              "id": "2",
+              "total_marks": 6,
+              "model_answer": "SELECT v.registration, v.km_since_service, d.contact_email FROM Vehicles v JOIN Depots d ON v.depot_id = d.depot_id WHERE v.km_since_service > v.service_interval_km ORDER BY v.km_since_service DESC;",
+              "criteria": [
+                {
+                  "description": "Correct JOIN between the two tables on the foreign key",
+                  "marks": 2
+                },
+                {
+                  "description": "Correct WHERE condition selecting below-threshold rows",
+                  "marks": 2
+                },
+                {
+                  "description": "Correct ORDER BY direction and column",
+                  "marks": 2
+                }
+              ],
+              "accepted_alternatives": [
+                "Implicit join syntax (WHERE p.supplier_id = s.supplier_id) instead of explicit JOIN - equally acceptable.",
+                "Column order in the SELECT list may differ from the model answer."
+              ]
+            },
+            {
+              "id": "3",
+              "total_marks": 4,
+              "model_answer": "UPDATE Vehicles SET km_since_service = 0 WHERE depot_id = 2; Omitting the WHERE clause would apply the price increase (or reset) to every row in the table, silently corrupting data for rows that were never meant to change.",
+              "criteria": [
+                {
+                  "description": "Syntactically correct UPDATE statement with the correct filter",
+                  "marks": 2
+                },
+                {
+                  "description": "Correct explanation of the risk of omitting WHERE (mass/unintended update)",
+                  "marks": 2
+                }
+              ],
+              "accepted_alternatives": []
+            },
+            {
+              "id": "4",
+              "total_marks": 4,
+              "model_answer": "Use optimistic concurrency control: include a version number or last-updated timestamp column, and require the UPDATE's WHERE clause to match the version the user last read; if no row matches (because someone else updated it first), reject the save and ask the user to reload and retry. (Pessimistic row-locking during the edit session is an equally valid alternative.)",
+              "criteria": [
+                {
+                  "description": "Names a valid concurrency-control technique (optimistic locking, pessimistic locking/row locks, or transactions with appropriate isolation level)",
+                  "marks": 3
+                },
+                {
+                  "description": "Explains, even briefly, how it prevents a lost update",
+                  "marks": 1
+                }
+              ],
+              "accepted_alternatives": [
+                "Database transactions with SERIALIZABLE/REPEATABLE READ isolation.",
+                "Application-level 'last write wins with warning' design, provided the candidate explains it actually surfaces the conflict rather than silently discarding data."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "E",
+      "questions": [
+        {
+          "question_id": "Q-E1",
+          "total_marks": 15,
+          "model_answer": "See per-part model answers below.",
+          "criteria": [
+            {
+              "description": "See per-part criteria in sub_questions.",
+              "marks": 15
+            }
+          ],
+          "accepted_alternatives": [],
+          "partial_credit_guidance": "For the algorithm part, mark the approach and complexity claim as a pair - a suboptimal but correct and correctly-analysed algorithm should not be marked down for not being the most efficient possible solution.",
+          "sub_questions": [
+            {
+              "id": "1",
+              "total_marks": 4,
+              "model_answer": "Design - the update describes planning screens and their data requirements before any code is written, which is the defining activity of the design phase.",
+              "criteria": [
+                {
+                  "description": "Names the correct SDLC phase",
+                  "marks": 2
+                },
+                {
+                  "description": "Justification correctly ties the phase name to the specific activity described",
+                  "marks": 2
+                }
+              ],
+              "accepted_alternatives": [
+                "'User Acceptance Testing' as a more specific answer for the feedback scenario, since it is a sub-activity of testing."
+              ]
+            },
+            {
+              "id": "2",
+              "total_marks": 6,
+              "model_answer": "```\nfunction findDuplicate(ids):\n    seen = empty set\n    for id in ids:\n        if id in seen:\n            return id\n        seen.add(id)\n    return None\n```\nApplied to a list of patient phone numbers, this returns the first ID/number already seen. Time complexity: O(n), because each element is visited once and set membership checks/inserts are O(1) on average.",
+              "criteria": [
+                {
+                  "description": "Correct algorithm logic that reliably detects a duplicate",
+                  "marks": 3
+                },
+                {
+                  "description": "Uses a set/hash-based lookup rather than a nested loop (or explicitly notes the nested-loop alternative's worse complexity)",
+                  "marks": 1
+                },
+                {
+                  "description": "States O(n) (or correctly justifies whatever complexity their approach actually has, e.g. O(n^2) for a nested-loop version)",
+                  "marks": 2
+                }
+              ],
+              "accepted_alternatives": [
+                "A correct nested-loop (O(n^2)) solution, provided the candidate correctly states O(n^2) rather than incorrectly claiming O(n) - full marks require complexity/approach consistency, not necessarily the optimal algorithm.",
+                "Sorting the list first then scanning for adjacent duplicates (O(n log n)), correctly justified."
+              ]
+            },
+            {
+              "id": "3",
+              "total_marks": 5,
+              "model_answer": "This is vulnerable to SQL injection: user_input is concatenated directly into the query string, so input like `'; DROP TABLE patients; --` would execute as SQL. Fix with a parameterised query, e.g.:\n```python\nquery = \"SELECT * FROM patients WHERE surname = %s\"\ncursor.execute(query, (user_input,))\n```\nThis is safe because the database driver sends the value separately from the query structure, so it can never be interpreted as SQL code.",
+              "criteria": [
+                {
+                  "description": "Correctly names SQL injection as the vulnerability",
+                  "marks": 2
+                },
+                {
+                  "description": "Rewrites using a parameterised query / prepared statement (or equivalent ORM safe-query method)",
+                  "marks": 2
+                },
+                {
+                  "description": "Explains, even briefly, why the fix is safe",
+                  "marks": 1
+                }
+              ],
+              "accepted_alternatives": [
+                "Use of an ORM's query builder (e.g. Django ORM, SQLAlchemy filter) instead of raw parameterised SQL.",
+                "Placeholder syntax specific to the candidate's chosen language/driver (?, %s, $1, :name) - any correct parameterisation mechanism is acceptable."
+              ],
+              "non_awarding_notes": "Manually escaping quotes in user_input (string replace) does not earn the 'safe fix' marks - it is a known-weak mitigation, not parameterisation."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F",
+      "questions": [
+        {
+          "question_id": "Q-F1",
+          "total_marks": 5,
+          "model_answer": "The relevant principle is professional practice / change-management governance: release/change logs exist so the team (and future maintainers) can trace what changed, diagnose regressions quickly, and meet any audit or client-reporting obligations - 'shipping faster' by skipping them creates hidden risk rather than removing real work. Before agreeing, the developer should raise the trade-off with the team lead, propose a minimal but real changelog entry, and only skip it if a documented team policy explicitly allows that for this type of release.",
+          "criteria": [
+            {
+              "description": "Names a specific, correctly-applicable governance/ethical/legislative or professional-practice principle (not a vague 'be ethical')",
+              "marks": 2
+            },
+            {
+              "description": "Explains a concrete, appropriate action to take before complying (e.g. check scope, escalate, confirm necessity) rather than blanket compliance or blanket refusal",
+              "marks": 2
+            },
+            {
+              "description": "Answer is coherent and specific to the scenario given, not generic boilerplate",
+              "marks": 1
+            }
+          ],
+          "accepted_alternatives": [
+            "Any correctly-reasoned principle in the same family (e.g. 'confidentiality by design', 'least-privilege data sharing', 'informed consent') is acceptable even if named differently from the model answer."
+          ],
+          "partial_credit_guidance": "A candidate who identifies the right concern but proposes an overly extreme response (flat refusal with no escalation path, or unquestioning compliance) should lose the second criterion's marks but may still earn the first and third.",
+          "penalties": ""
+        }
+      ]
+    }
+  ],
+  "generation_meta": {
+    "provider": "mock",
+    "seed": 9
+  }
+}
