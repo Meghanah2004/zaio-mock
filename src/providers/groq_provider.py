@@ -49,6 +49,38 @@ from src.security.config import SecurityConfig
 from src.security.redaction import redact_secrets
 
 
+def _extract_retry_after(exc: Exception) -> float | None:
+    """Best-effort extraction of a 429/5xx response's ``Retry-After`` header
+    (seconds) from a Groq SDK exception, for src.generation.llm_utils.
+    call_provider_with_retry to wait the amount of time the server actually
+    asked for instead of a fixed guess (see that function's docstring for
+    the real incident this fixes - a Groq 429 said "try again in 4.71s" and
+    the old fixed backoff retried after 2s).
+
+    groq.APIStatusError (the base of RateLimitError etc. - confirmed
+    directly against the installed SDK's src/groq/_exceptions.py) carries
+    the real ``httpx.Response`` as ``.response``, headers included. Never
+    raises: returns None (falls back to the existing fixed backoff, exactly
+    as before this function existed) for a missing response/header, a
+    non-numeric value, or a non-positive value - a malformed or absent
+    header must never break retry behavior, only fail to improve it.
+    """
+    response = getattr(exc, "response", None)
+    headers = getattr(response, "headers", None)
+    if headers is None:
+        return None
+    raw = headers.get("retry-after")
+    if raw is None:
+        return None
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        return None
+    if value <= 0:
+        return None
+    return value
+
+
 class GroqProvider(LLMProvider):
     name = "groq"
 
@@ -109,6 +141,7 @@ class GroqProvider(LLMProvider):
             raise LLMProviderError(
                 f"Groq API call failed: {redact_secrets(str(exc))}",
                 retryable=is_retryable_status(getattr(exc, "status_code", None)),
+                retry_after=_extract_retry_after(exc),
             ) from exc
 
         choices = response.choices

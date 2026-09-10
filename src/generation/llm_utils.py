@@ -12,6 +12,15 @@ from src.security.config import SecurityConfig
 
 _JSON_OBJECT_RE = re.compile(r"\{.*\}", re.DOTALL)
 
+MAX_RETRY_AFTER_SECONDS = 30.0
+"""Upper bound on how long call_provider_with_retry will ever sleep for one
+retry, even when a provider-supplied LLMProviderError.retry_after asks for
+longer (see GroqProvider's Retry-After extraction) - caps a malformed or
+unusually large server-suggested wait so one retry can never dominate a
+request's total latency in a serverless function with its own execution
+time limit. 30s is comfortably above the ~1-5s Retry-After values Groq has
+been observed to send for a single-request-sized 429, while still bounded."""
+
 _JSON_STRING_CONTROL_ESCAPES = {
     "\n": "\\n",
     "\r": "\\r",
@@ -209,6 +218,16 @@ def call_provider_with_retry(
     conclusion. A TRANSIENT failure (429 rate limit, 5xx, timeout/network -
     the default when a provider does not classify its exception, or cannot)
     still retries up to ``max_attempts`` exactly as before.
+
+    The wait before the next attempt prefers ``exc.retry_after`` (a
+    server-suggested wait in seconds, e.g. from a 429's ``Retry-After``
+    header - see GroqProvider) over the fixed ``backoff * attempt`` formula,
+    capped at MAX_RETRY_AFTER_SECONDS. Real incident: a Groq 429 said "try
+    again in 4.71s" while the old fixed formula waited at most 2s before
+    retrying - guaranteed to hit the same still-exhausted per-minute token
+    budget again. When no provider-supplied wait is available (any other
+    provider, or a Groq error without a usable header), behavior is
+    byte-identical to before this field existed.
     """
     security_config = security_config or SecurityConfig()
     max_attempts = max(1, security_config.generation_max_retries)
@@ -223,7 +242,10 @@ def call_provider_with_retry(
             if not exc.retryable:
                 break
             if attempt < max_attempts:
-                time.sleep(backoff * attempt)
+                delay = backoff * attempt
+                if exc.retry_after is not None:
+                    delay = min(exc.retry_after, MAX_RETRY_AFTER_SECONDS)
+                time.sleep(delay)
 
     if last_error is None:  # pragma: no cover - defensive only, not reachable
         raise LLMProviderError("Provider call failed with no error captured.")

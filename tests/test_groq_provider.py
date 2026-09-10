@@ -165,6 +165,95 @@ def test_a_429_sdk_error_is_still_classified_as_retryable(monkeypatch):
     assert exc_info.value.retryable is True
 
 
+def test_429_with_retry_after_header_is_captured_on_the_error(monkeypatch):
+    """Regression test for the real production incident (429
+    rate_limit_exceeded, TPM limit 8000, Groq's own message: "Please try
+    again in 4.71s"): the Retry-After header must reach LLMProviderError so
+    src.generation.llm_utils.call_provider_with_retry can wait the amount
+    of time Groq actually asked for."""
+    import httpx
+
+    fake_client = MagicMock()
+    response = httpx.Response(
+        status_code=429,
+        headers={"retry-after": "4.71"},
+        request=httpx.Request("POST", "https://api.groq.com/x"),
+    )
+    fake_client.chat.completions.create.side_effect = groq.RateLimitError("rate limited", response=response, body=None)
+    monkeypatch.setattr("groq.Groq", lambda **kwargs: fake_client)
+
+    provider = GroqProvider(_settings())
+    with pytest.raises(LLMProviderError) as exc_info:
+        provider.generate("sys", "user", {})
+    assert exc_info.value.retry_after == pytest.approx(4.71)
+
+
+def test_429_without_a_retry_after_header_leaves_retry_after_none(monkeypatch):
+    import httpx
+
+    fake_client = MagicMock()
+    response = httpx.Response(status_code=429, request=httpx.Request("POST", "https://api.groq.com/x"))
+    fake_client.chat.completions.create.side_effect = groq.RateLimitError("rate limited", response=response, body=None)
+    monkeypatch.setattr("groq.Groq", lambda **kwargs: fake_client)
+
+    provider = GroqProvider(_settings())
+    with pytest.raises(LLMProviderError) as exc_info:
+        provider.generate("sys", "user", {})
+    assert exc_info.value.retry_after is None
+
+
+def test_malformed_retry_after_header_is_safely_ignored(monkeypatch):
+    """A non-numeric Retry-After value must never raise or break retry
+    behavior - only fail to improve it (falls back to the fixed backoff)."""
+    import httpx
+
+    fake_client = MagicMock()
+    response = httpx.Response(
+        status_code=429,
+        headers={"retry-after": "not-a-number"},
+        request=httpx.Request("POST", "https://api.groq.com/x"),
+    )
+    fake_client.chat.completions.create.side_effect = groq.RateLimitError("rate limited", response=response, body=None)
+    monkeypatch.setattr("groq.Groq", lambda **kwargs: fake_client)
+
+    provider = GroqProvider(_settings())
+    with pytest.raises(LLMProviderError) as exc_info:
+        provider.generate("sys", "user", {})
+    assert exc_info.value.retry_after is None
+
+
+def test_non_positive_retry_after_header_is_safely_ignored(monkeypatch):
+    import httpx
+
+    fake_client = MagicMock()
+    response = httpx.Response(
+        status_code=429,
+        headers={"retry-after": "0"},
+        request=httpx.Request("POST", "https://api.groq.com/x"),
+    )
+    fake_client.chat.completions.create.side_effect = groq.RateLimitError("rate limited", response=response, body=None)
+    monkeypatch.setattr("groq.Groq", lambda **kwargs: fake_client)
+
+    provider = GroqProvider(_settings())
+    with pytest.raises(LLMProviderError) as exc_info:
+        provider.generate("sys", "user", {})
+    assert exc_info.value.retry_after is None
+
+
+def test_generic_sdk_exception_with_no_response_has_no_retry_after(monkeypatch):
+    """A network-error-shaped exception (no httpx.Response at all, e.g. a
+    connection drop) must not crash retry_after extraction - it simply has
+    nothing to extract."""
+    fake_client = MagicMock()
+    fake_client.chat.completions.create.side_effect = RuntimeError("network blip")
+    monkeypatch.setattr("groq.Groq", lambda **kwargs: fake_client)
+
+    provider = GroqProvider(_settings())
+    with pytest.raises(LLMProviderError) as exc_info:
+        provider.generate("sys", "user", {})
+    assert exc_info.value.retry_after is None
+
+
 def test_missing_sdk_raises_a_clear_provider_error(monkeypatch):
     # Setting a module to None in sys.modules is the standard way to force
     # `import groq` to raise ImportError, simulating an environment where

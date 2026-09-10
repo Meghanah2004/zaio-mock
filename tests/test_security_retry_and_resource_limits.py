@@ -10,6 +10,7 @@ from __future__ import annotations
 import pytest
 
 from src.generation.llm_utils import (
+    MAX_RETRY_AFTER_SECONDS,
     GenerationError,
     call_provider_with_retry,
     extract_json,
@@ -117,6 +118,73 @@ def test_a_permanent_provider_error_is_not_retried_even_with_budget_remaining():
     with pytest.raises(LLMProviderError, match="permanent failure"):
         call_provider_with_retry(provider, "sys", "user", {}, security_config=config)
     assert provider.call_count == 1  # NOT 5 - no pointless retries
+
+
+class _FailsOnceWithRetryAfterProvider(LLMProvider):
+    """Simulates a 429 whose LLMProviderError carries a provider-supplied
+    retry_after (see src/providers/groq_provider.py's Retry-After header
+    extraction) - the real, observed shape of the production incident this
+    fixes (Groq's 429 body: "Please try again in 4.71s")."""
+
+    name = "fails-once-retry-after"
+
+    def __init__(self, retry_after: float):
+        self.call_count = 0
+        self._retry_after = retry_after
+
+    def generate(self, system_prompt, user_prompt, task):
+        self.call_count += 1
+        if self.call_count == 1:
+            raise LLMProviderError("simulated 429 with a server-suggested wait", retry_after=self._retry_after)
+        return '{"ok": true}'
+
+
+def test_retry_after_is_honored_instead_of_the_fixed_backoff(monkeypatch):
+    """Real incident: Groq said "try again in 4.71s" while the old fixed
+    backoff (1s, then 2s) retried well before that - guaranteed to hit the
+    same still-exhausted per-minute token budget again. When
+    LLMProviderError.retry_after is set, it must be used verbatim (capped -
+    see the next test) instead of backoff * attempt."""
+    sleeps: list[float] = []
+    monkeypatch.setattr("time.sleep", lambda seconds: sleeps.append(seconds))
+
+    provider = _FailsOnceWithRetryAfterProvider(retry_after=4.71)
+    config = SecurityConfig(generation_max_retries=3, generation_retry_backoff_seconds=1.0)
+    result = call_provider_with_retry(provider, "sys", "user", {}, security_config=config)
+
+    assert result == '{"ok": true}'
+    assert sleeps == [4.71]  # not backoff*1 == 1.0
+
+
+def test_retry_after_is_capped_at_max_retry_after_seconds(monkeypatch):
+    """A malformed or unusually large server-suggested wait must never let
+    one retry dominate a request's total latency (relevant on a serverless
+    platform with its own execution time limit) - see
+    src.generation.llm_utils.MAX_RETRY_AFTER_SECONDS."""
+    sleeps: list[float] = []
+    monkeypatch.setattr("time.sleep", lambda seconds: sleeps.append(seconds))
+
+    provider = _FailsOnceWithRetryAfterProvider(retry_after=9999.0)
+    config = SecurityConfig(generation_max_retries=3, generation_retry_backoff_seconds=1.0)
+    call_provider_with_retry(provider, "sys", "user", {}, security_config=config)
+
+    assert sleeps == [MAX_RETRY_AFTER_SECONDS]
+
+
+def test_without_retry_after_the_fixed_backoff_formula_is_unchanged(monkeypatch):
+    """Existing retry behavior for a transient error that carries no
+    provider-supplied wait (e.g. Anthropic/Gemini, or a Groq error with no
+    usable Retry-After header) must be byte-identical to before this field
+    existed: backoff * attempt, exactly."""
+    sleeps: list[float] = []
+    monkeypatch.setattr("time.sleep", lambda seconds: sleeps.append(seconds))
+
+    provider = _FailsTwiceThenSucceedsProvider()
+    config = SecurityConfig(generation_max_retries=5, generation_retry_backoff_seconds=1.0)
+    result = call_provider_with_retry(provider, "sys", "user", {}, security_config=config)
+
+    assert result == '{"ok": true}'
+    assert sleeps == [1.0, 2.0]  # backoff*1, backoff*2 - unchanged existing formula
 
 
 def test_is_retryable_status_rejects_known_permanent_client_errors():

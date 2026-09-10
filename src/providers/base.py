@@ -30,11 +30,21 @@ class LLMProviderError(RuntimeError):
     resilience. A transient failure (429 rate limit, 5xx, network/timeout)
     genuinely might succeed on a later attempt, so stays retryable=True -
     this is deliberately NOT "never retry a 429": a rate limit can still
-    clear within the bounded retry window, unlike a wrong credential."""
+    clear within the bounded retry window, unlike a wrong credential.
 
-    def __init__(self, message: str, *, retryable: bool = True) -> None:
+    ``retry_after`` (default None) optionally carries a server-suggested
+    wait time in seconds (e.g. from a 429 response's ``Retry-After``
+    header) - see src.generation.llm_utils.call_provider_with_retry, which
+    prefers this over its own fixed backoff formula when present. A
+    provider that cannot determine one (or whose SDK exception carries no
+    response headers at all) simply leaves this None and retry behavior is
+    unchanged from before this field existed.
+    """
+
+    def __init__(self, message: str, *, retryable: bool = True, retry_after: float | None = None) -> None:
         super().__init__(message)
         self.retryable = retryable
+        self.retry_after = retry_after
 
 
 _PERMANENT_HTTP_STATUS_CODES = frozenset({400, 401, 403, 404, 422})
