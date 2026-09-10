@@ -748,8 +748,21 @@ class MockProvider(LLMProvider):
     # -- quality review ----------------------------------------------------
     def _quality_review(self, task: dict[str, Any]) -> dict[str, Any]:
         paper = task["paper"]
+        # section_ids (added for the grouped-review rework, 2026-09-10):
+        # src.validation.quality_reviewer.run_quality_review now calls the
+        # provider once per section GROUP, not once for the whole paper.
+        # task still carries the full paper (see that module's docstring),
+        # so this fixture must scope its response to only the group actually
+        # being asked about here - otherwise 3 calls would each return every
+        # section's questions, tripling every question's review entry in
+        # MockProvider-backed tests. None (the default) means "no grouping
+        # requested" - every section, preserving old behavior for any other
+        # caller that doesn't pass this key.
+        section_ids = task.get("section_ids")
         question_reviews = []
         for section in paper["sections"]:
+            if section_ids is not None and section["id"] not in section_ids:
+                continue
             for q in section["questions"]:
                 question_reviews.append(
                     {

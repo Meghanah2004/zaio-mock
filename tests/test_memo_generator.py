@@ -606,3 +606,115 @@ def test_generate_memo_skips_answer_grounding_entirely_in_test_mode():
     memo_question = memo["sections"][0]["questions"][0]
     assert memo_question["grounding"] == []
     assert memo["generation_meta"]["answer_grounded"] is False
+
+
+# ---------------------------------------------------------------------------
+# Memo-generation prompt de-duplication (production token-budget fix,
+# 2026-09-10, real Groq 429s - TPM limit 8000). The question's OWN
+# "grounding" array (citation metadata, already independently checked at
+# generation time) used to be echoed a second time into the memo prompt via
+# json.dumps(question) - pure duplicate payload prompts/generate_memo.txt
+# never even instructs the model to read. These tests prove it is now
+# excluded from the OUTGOING prompt while RAG (answer_evidence) and the
+# final memo's own grounding/answer-grounding validation are unaffected.
+# ---------------------------------------------------------------------------
+def _question_with_grounding() -> dict[str, Any]:
+    question = _question()
+    question["grounding"] = [
+        {
+            "document": "Module 8-Learner Guide.pdf",
+            "page": 42,
+            "passage": "A UNIQUE_GROUNDING_PASSAGE_MARKER identifying exactly this question's own citation text.",
+            "reason": "Retrieved for KM-08-KT01",
+        }
+    ]
+    return question
+
+
+def test_memo_prompt_excludes_the_questions_own_grounding_array():
+    provider = ScriptedMemoProvider([_memo_response(sub1_criteria_marks=[2, 2], sub2_criteria_marks=[3, 3])])
+    question = _question_with_grounding()
+
+    _system_prompt, user_prompt = _build_memo_prompt(question, answer_evidence=[])
+
+    assert "UNIQUE_GROUNDING_PASSAGE_MARKER" not in user_prompt
+    # Sanity: prove the marker really was on the input question (i.e. this
+    # test would have caught the old behavior, not vacuously pass).
+    assert question["grounding"][0]["passage"].count("UNIQUE_GROUNDING_PASSAGE_MARKER") == 1
+    assert provider.call_count == 0  # unused in this test - _build_memo_prompt is pure
+
+
+def test_memo_prompt_still_includes_answer_evidence_after_grounding_removed():
+    """The exclusion must be narrowly scoped to the question's OWN
+    grounding array - the separate answer_evidence block (real RAG for
+    THIS memo call) must still be fully present."""
+    question = _question_with_grounding()
+    answer_evidence = [
+        {
+            "document": "Module 8-Learner Guide.pdf",
+            "page": 10,
+            "passage": "A DISTINCT_ANSWER_EVIDENCE_MARKER supplied specifically to answer this question.",
+            "reason": "Retrieved to answer Q-E1",
+        }
+    ]
+
+    _system_prompt, user_prompt = _build_memo_prompt(question, answer_evidence=answer_evidence)
+
+    assert "DISTINCT_ANSWER_EVIDENCE_MARKER" in user_prompt
+    assert "UNIQUE_GROUNDING_PASSAGE_MARKER" not in user_prompt
+
+
+def test_memo_prompt_still_includes_every_other_question_field():
+    """The exclusion must be exactly one key ("grounding") - marks,
+    sub_questions, and every other field the model needs to write a
+    correct, mark-reconciled memo must still be present verbatim."""
+    question = _question_with_grounding()
+
+    _system_prompt, user_prompt = _build_memo_prompt(question, answer_evidence=[])
+
+    assert "Identify the SDLC phase." in user_prompt
+    assert "Fix the vulnerability." in user_prompt
+    assert '"id": "Q-E1"' in user_prompt or "Q-E1" in user_prompt
+
+
+def test_generated_memo_grounding_is_unaffected_by_prompt_deduplication():
+    """End-to-end proof, reusing the established answer-RAG fixtures
+    (_security_question/_ANSWER_CORPUS_CHUNKS, see
+    test_generate_memo_retries_an_ungrounded_answer_then_accepts_a_grounded_one
+    above): even though the question's OWN grounding array is no longer
+    echoed into the OUTGOING prompt, the RETURNED memo's "grounding" field
+    is still built entirely from answer_evidence (real RAG retrieval, not
+    skipped) - this change only touches what is SENT, never what the
+    pipeline retrieves, computes, or stores."""
+    question = _security_question()
+    question["grounding"] = [
+        {
+            "document": "Module 8-Learner Guide.pdf",
+            "page": 42,
+            "passage": "A DIFFERENT question-side citation, not the answer-side evidence this test checks for.",
+            "reason": "Retrieved for KM-08-KT01",
+        }
+    ]
+    response = _grounded_memo_question(
+        "This is vulnerable to SQL injection. Parameterised queries prevent SQL injection because user "
+        "input is sent to the database separately from the query structure and can never be interpreted "
+        "as executable SQL code."
+    )
+    provider = ScriptedMemoProvider([response])
+    paper = {
+        "paper_id": "test-paper",
+        "status_disclaimer": "MOCK / PRACTICE ASSESSMENT ONLY.",
+        "total_marks": 6,
+        "sections": [{"id": "E", "questions": [question]}],
+    }
+    index = ReferenceCorpusIndex(_ANSWER_CORPUS_CHUNKS)
+
+    memo = generate_memo(paper, provider, seed=1, retrieval_index=index, corpus_chunks=_ANSWER_CORPUS_CHUNKS)
+
+    memo_question = memo["sections"][0]["questions"][0]
+    assert memo_question["grounding"], "memo grounding must still be populated from answer_evidence"
+    # The stored grounding is the ANSWER-side evidence (Module 9, real RAG
+    # retrieval), never the question's own grounding array (Module 8) that
+    # was excluded from the prompt above.
+    assert memo_question["grounding"][0]["document"] == "Module 9-Learner Guide.pdf"
+    assert memo["generation_meta"]["answer_grounded"] is True

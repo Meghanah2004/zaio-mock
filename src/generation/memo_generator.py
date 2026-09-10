@@ -98,6 +98,25 @@ def _build_answer_evidence_block(answer_evidence: list[dict[str, Any]]) -> str:
     )
 
 
+def _question_for_memo_prompt(question: dict[str, Any]) -> dict[str, Any]:
+    """Strips the question's own ``grounding`` (citation) array before it is
+    echoed into the memo-generation prompt - production-incident fix (real
+    Groq 429s, TPM limit 8000): this field is question-provenance metadata,
+    already independently checked at generation time
+    (src.generation.question_generator._grounding_overlap_ok), and
+    prompts/generate_memo.txt never references or instructs the model to
+    use it - the model's stated knowledge source for THIS call is the
+    separate {answer_evidence} block below, retrieved specifically to
+    support answering this question. Re-sending the question's own
+    grounding array here was pure duplicate payload with no effect on
+    answer quality or grounding: the memo's own final ``grounding`` field
+    (see _generate_memo_for_question below) is built from
+    ``answer_evidence``, never from this echoed question JSON, so removing
+    it here does not touch RAG, answer grounding, or answer-grounding
+    validation in any way."""
+    return {key: value for key, value in question.items() if key != "grounding"}
+
+
 def _build_memo_prompt(
     question: dict[str, Any], answer_evidence: list[dict[str, Any]], retry_note: str = ""
 ) -> tuple[str, str]:
@@ -105,7 +124,7 @@ def _build_memo_prompt(
     system_part, _, user_part = template.partition("USER (templated at call time):")
     system_prompt = system_part.replace("SYSTEM:", "", 1).strip()
     user_prompt = (
-        user_part.replace("{question_json}", json.dumps(question))
+        user_part.replace("{question_json}", json.dumps(_question_for_memo_prompt(question)))
         .replace("{marks_budget}", _build_marks_budget(question))
         .replace("{answer_evidence}", _build_answer_evidence_block(answer_evidence))
         .strip()
