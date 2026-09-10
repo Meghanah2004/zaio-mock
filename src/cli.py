@@ -42,8 +42,13 @@ from src.ingestion.pdf_loader import load_reference_material
 from src.providers.factory import build_provider
 from src.rendering.markdown_renderer import render_memo_markdown, render_paper_markdown
 from src.rendering.pdf_renderer import PdfRenderingUnavailable, render_markdown_to_pdf
+from src.retrieval.evidence_selector import (
+    build_evidence_by_section,
+    load_retrieval_index,
+)
 from src.security.config import SecurityConfig
 from src.security.redaction import redact_secrets
+from src.validation.cross_paper_novelty import load_history, record_paper, write_history
 from src.validation.orchestrator import run_all_validators
 from src.validation.quality_reviewer import run_quality_review
 from src.validation.schema_validator import load_json_file
@@ -121,17 +126,54 @@ def cmd_generate(args: argparse.Namespace) -> int:
     print(f"Wrote {blueprint_path}")
 
     settings = LLMSettings()
-    provider = build_provider(settings)
+    security_config = SecurityConfig.from_env()
+    provider = build_provider(settings, security_config)
     print(f"Using LLM provider: {provider.name}"
           + (" (real API credentials configured)" if settings.has_real_credentials() else " (no live API key configured)"))
 
     blueprint_dict = blueprint.to_json_dict()
+
+    corpus_chunks_path = ARTIFACTS_DIR / "reference-corpus-chunks.json"
     try:
-        paper = generate_paper(blueprint_dict, provider, args.seed)
-        memo = generate_memo(paper, provider, args.seed)
+        retrieval_index, corpus_chunks = load_retrieval_index(corpus_chunks_path)
+        evidence_by_section = build_evidence_by_section(
+            blueprint_dict, retrieval_index, corpus_chunks, security_config, args.seed
+        )
+    except FileNotFoundError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
+    total_evidence = sum(len(v) for v in evidence_by_section.values())
+    print(
+        f"Retrieved {total_evidence} learner-guide evidence passage(s) across "
+        f"{len(evidence_by_section)} section(s) from {corpus_chunks_path}."
+    )
+
+    history_path = ARTIFACTS_DIR / "generation-history.json"
+    generation_history = load_history(history_path)
+
+    try:
+        paper = generate_paper(
+            blueprint_dict,
+            provider,
+            args.seed,
+            evidence_by_section=evidence_by_section,
+            generation_history=generation_history,
+            security_config=security_config,
+        )
+        memo = generate_memo(
+            paper,
+            provider,
+            args.seed,
+            security_config=security_config,
+            retrieval_index=retrieval_index,
+            corpus_chunks=corpus_chunks,
+        )
     except Exception as exc:  # noqa: BLE001
         print(f"ERROR: generation failed: {redact_secrets(str(exc))}", file=sys.stderr)
         return 1
+
+    write_history(record_paper(generation_history, paper), history_path)
+    print(f"Updated {history_path} (cross-paper novelty record for future generations).")
 
     paper_path = OUTPUT_DIR / f"mock-eisa-paper-{args.paper_number:02d}.json"
     memo_path = OUTPUT_DIR / f"mock-eisa-memo-{args.paper_number:02d}.json"
@@ -197,7 +239,7 @@ def cmd_review(args: argparse.Namespace) -> int:
         return 1
 
     settings = LLMSettings()
-    provider = build_provider(settings)
+    provider = build_provider(settings, SecurityConfig.from_env())
     review = run_quality_review(paper, memo, provider)
 
     out_path = ARTIFACTS_DIR / "quality-review.json"

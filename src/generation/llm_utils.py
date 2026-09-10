@@ -12,6 +12,20 @@ from src.security.config import SecurityConfig
 
 _JSON_OBJECT_RE = re.compile(r"\{.*\}", re.DOTALL)
 
+_JSON_STRING_CONTROL_ESCAPES = {
+    "\n": "\\n",
+    "\r": "\\r",
+    "\t": "\\t",
+    "\b": "\\b",
+    "\f": "\\f",
+}
+"""RFC 8259 requires every control character (U+0000-U+001F) inside a JSON
+string literal to be escaped; these are the named short-form escapes for
+the common ones. Any other control character falls back to a \\u00XX
+escape in _escape_raw_control_chars_in_json_strings below - the mapping
+here is a readability optimization for the common cases, not a
+completeness requirement (the \\uXXXX fallback covers all 32 codes)."""
+
 
 class GenerationError(RuntimeError):
     """Raised when provider output cannot be parsed or fails structural checks.
@@ -25,8 +39,86 @@ class GenerationError(RuntimeError):
     """
 
 
+def _escape_raw_control_chars_in_json_strings(text: str) -> str:
+    """Replace every RAW (unescaped) control character found INSIDE a JSON
+    string literal with its proper JSON escape sequence, leaving everything
+    else - including control characters OUTSIDE any string literal, e.g.
+    ordinary newlines between object members, which are already legal
+    JSON whitespace there - completely untouched.
+
+    Why this is needed: a real Gemini response for this pipeline failed to
+    parse with "Invalid control character at: line 31 column 148" - Gemini
+    had written a multi-line code sample into a "prompt"/"question" string
+    value using a literal newline byte instead of the two-character JSON
+    escape "\\n". RFC 8259 requires every control character (U+0000-U+001F)
+    inside a string literal to be escaped; Python's ``json`` module (like
+    every strict JSON parser) correctly rejects the unescaped byte rather
+    than guessing what was meant. This is a known, common LLM output defect
+    (multi-line code/text pasted "as-is" into a JSON string) - not
+    something the schema/validators should paper over, and not something
+    worth relaxing Python's parser for, since a genuinely malformed
+    document (missing quote, trailing comma, truncated output, etc.) must
+    still fail loudly.
+
+    This is a single left-to-right scan (linear time, no backtracking,
+    same complexity class as the regex work already done in extract_json)
+    that tracks whether the current position is inside a string literal
+    (toggling on an unescaped '"') and whether the previous character was
+    an unconsumed backslash (so an escaped quote/backslash never wrongly
+    ends/re-enters a string). It is a NORMALIZATION of the JSON's own
+    serialization, not a change to meaning: once parsed, the control
+    character survives as the exact same byte in the resulting Python
+    string (a literal newline escaped to "\\n" decodes back to a literal
+    newline) - see the "lossless round-trip" test in
+    tests/test_llm_utils_json_extraction.py.
+    """
+    out: list[str] = []
+    in_string = False
+    escaped = False
+    for ch in text:
+        if in_string:
+            if escaped:
+                out.append(ch)
+                escaped = False
+            elif ch == "\\":
+                out.append(ch)
+                escaped = True
+            elif ch == '"':
+                in_string = False
+                out.append(ch)
+            elif ord(ch) < 0x20:
+                out.append(_JSON_STRING_CONTROL_ESCAPES.get(ch, f"\\u{ord(ch):04x}"))
+            else:
+                out.append(ch)
+        else:
+            if ch == '"':
+                in_string = True
+            out.append(ch)
+    return "".join(out)
+
+
+def _parse_json_object(candidate: str) -> dict[str, Any]:
+    """Parse one JSON-object candidate, tolerating raw control characters
+    inside string literals as a targeted fallback (see
+    _escape_raw_control_chars_in_json_strings) - never for any other
+    parse failure, which is re-raised unchanged so a genuinely malformed
+    document is never silently accepted.
+    """
+    try:
+        return json.loads(candidate)  # type: ignore[no-any-return]
+    except json.JSONDecodeError as exc:
+        if "Invalid control character" not in exc.msg:
+            raise
+        sanitized = _escape_raw_control_chars_in_json_strings(candidate)
+        return json.loads(sanitized)  # type: ignore[no-any-return]  # a second failure propagates as-is
+
+
 def extract_json(raw: str, security_config: SecurityConfig | None = None) -> dict[str, Any]:
-    """Parse a JSON object out of raw provider text, tolerating markdown fences.
+    """Parse a JSON object out of raw provider text, tolerating markdown
+    fences and raw control characters inside string literals (see
+    _parse_json_object) - the latter is a normalization of a real, observed
+    LLM output defect, never a relaxation that accepts a document broken
+    for any other reason.
 
     SECURITY: bounds the input size before running any regex or parser over
     it - a malformed or adversarial provider response must not be allowed
@@ -48,16 +140,39 @@ def extract_json(raw: str, security_config: SecurityConfig | None = None) -> dic
             text = text[4:]
         text = text.strip()
     try:
-        return json.loads(text)
+        return _parse_json_object(text)
     except json.JSONDecodeError:
         pass
     match = _JSON_OBJECT_RE.search(raw)
     if not match:
         raise GenerationError(f"Provider output did not contain a JSON object: {raw[:300]!r}")
     try:
-        return json.loads(match.group(0))
+        return _parse_json_object(match.group(0))
     except json.JSONDecodeError as exc:
-        raise GenerationError(f"Provider output contained malformed JSON: {exc}") from exc
+        # REWORK (production incident, 2026-09-10): a real Groq response
+        # failed with "Expecting ',' delimiter: line 69 column 10 (char
+        # 4496)" and the resulting GenerationError - all this branch used
+        # to raise - carried only that parser message, never the text that
+        # actually failed to parse. That message alone is undiagnosable:
+        # it names a position but not what was there, and by the time
+        # anyone reads the log the only way to see the actual malformed
+        # output would be paying for a fresh real API call to try to
+        # reproduce it. This is server-log-only content (see
+        # api/errors.handle_generation_error - a GenerationError's str() is
+        # logged via sanitize_for_public but the client only ever receives
+        # a fixed generic message + request_id, never this text), so a
+        # bounded snippet of the actual candidate around the failure
+        # position is safe to include and genuinely diagnostic. Bounded
+        # (not the full candidate) so one adversarial-or-just-huge
+        # response can't blow up a log line.
+        candidate = match.group(0)
+        context_start = max(0, exc.pos - 200)
+        context_end = min(len(candidate), exc.pos + 200)
+        context = candidate[context_start:context_end]
+        raise GenerationError(
+            f"Provider output contained malformed JSON: {exc}. Context around the failure "
+            f"(candidate chars {context_start}-{context_end}): {context!r}"
+        ) from exc
 
 
 def load_prompt_template(name: str) -> str:
@@ -84,6 +199,16 @@ def call_provider_with_retry(
     unchanged so generation terminates safely (no unbounded retry loop) and
     the failure is visible to the caller exactly as it would be without
     this wrapper.
+
+    Within that, ``exc.retryable`` (see LLMProviderError) is checked before
+    looping again: a PERMANENT failure (e.g. a 401/403 bad API key, or a
+    400/404/422 malformed request - see src/providers/groq_provider.py and
+    anthropic_provider.py's classification) fails identically on every
+    attempt, so it is re-raised immediately on the FIRST attempt rather
+    than burning the full retry budget's worth of latency on a foregone
+    conclusion. A TRANSIENT failure (429 rate limit, 5xx, timeout/network -
+    the default when a provider does not classify its exception, or cannot)
+    still retries up to ``max_attempts`` exactly as before.
     """
     security_config = security_config or SecurityConfig()
     max_attempts = max(1, security_config.generation_max_retries)
@@ -95,6 +220,8 @@ def call_provider_with_retry(
             return provider.generate(system_prompt, user_prompt, task)
         except LLMProviderError as exc:
             last_error = exc
+            if not exc.retryable:
+                break
             if attempt < max_attempts:
                 time.sleep(backoff * attempt)
 

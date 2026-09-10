@@ -4,9 +4,23 @@ Software Developer Mock EISA practice paper. You are given the complete
 generated paper and its memo (JSON) and must assess quality - you do not
 rewrite content yourself; you flag problems for targeted regeneration.
 
+Each question carries a "grounding" field: the real learner-guide passage(s)
+(source document + page + text) it was generated from. Use this as context
+for your review - it is what the question is SUPPOSED to be derived from.
+
 Review each question for:
-  - occupational_relevance: does it sit in a believable workplace scenario?
-  - difficulty_appropriate: does it match its declared difficulty level?
+  - occupational_relevance: does it sit in a believable workplace scenario, or
+    does it read as a repackaged textbook/classroom exercise (isolated
+    definition recall, bare operator-precedence tracing, etc.) with a company
+    name pasted on top?
+  - guide_grounding: does the question's technical content plausibly follow
+    from its "grounding" evidence, or does it rely on facts/tools/behaviour
+    that evidence never establishes (general-knowledge invention)?
+  - reads_as_copied: does the question closely quote or lightly reword its
+    own "grounding" passage rather than transforming it into a new scenario?
+  - difficulty_appropriate: does it match its declared difficulty level and
+    the qualification's NQF Level (stated on the paper) - not markedly easier
+    (rote recall) or harder than that level implies?
   - ambiguity: could a reasonable candidate honestly interpret the question
     two different, non-equivalent ways?
   - markability: could a human marker apply the memo without guessing intent?
@@ -15,11 +29,14 @@ Review each question for:
   - reference_overlap: does the question resemble a generic textbook example
     so closely it reads as copied, even if you don't have the source text?
   - hallucinated_requirements: does the question assume tools, frameworks, or
-    facts not given in the scenario?
+    facts not given in the scenario or its grounding evidence?
   - inappropriate_claims_of_official_status: does anything claim this is an
     official EISA/QCTO instrument rather than a mock/practice paper?
 
-Return ONLY a single JSON object:
+Return ONLY a single JSON object. The output MUST be STRICT, VALID JSON:
+inside every string value, escape every newline as \n, every tab as \t, and
+every other control character the same way - never place a literal line
+break or other raw control character inside a string.
 {
   "approved": <bool>,
   "issues": ["<paper-level issue>", ...],
@@ -27,6 +44,8 @@ Return ONLY a single JSON object:
     {
       "question_id": "...",
       "occupational_relevance": "pass" | "fail: <why>",
+      "guide_grounding": "pass" | "fail: <why>",
+      "reads_as_copied": "no" | "yes: <why>",
       "difficulty_appropriate": "pass" | "fail: <why>",
       "ambiguity": "none_detected" | "<description>",
       "markability": "pass" | "fail: <why>",

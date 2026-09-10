@@ -14,6 +14,13 @@ variables, reordered clauses, translated wording). Those all require either
 a real embedding model or LLM judgement - the pipeline's separate quality
 review stage (src/validation/quality_reviewer.py) is what's positioned to
 catch that, per docs/DESIGN.md, and even that is not a guarantee.
+
+``ReferenceCorpusIndex`` is also reused (via its ``top_k`` method) by
+src/retrieval/evidence_selector.py to retrieve the actual learner-guide
+passages handed to the LLM at generation time - the SAME lightweight TF-IDF
+machinery, no second index, no added dependency. It lives here rather than
+under src/retrieval/ because it predates that package and the novelty
+checker remains its primary consumer; retrieval imports it from here.
 """
 from __future__ import annotations
 
@@ -35,7 +42,7 @@ def _tokenize(text: str) -> list[str]:
 class ReferenceCorpusIndex:
     """A tiny inverted TF-IDF index over reference-text chunks."""
 
-    def __init__(self, chunks: list[dict[str, str]]):
+    def __init__(self, chunks: list[dict[str, Any]]):
         self.chunks = chunks
         self._df: Counter[str] = Counter()
         self._chunk_tf: list[Counter[str]] = []
@@ -58,7 +65,7 @@ class ReferenceCorpusIndex:
             for term, w in weights.items():
                 self._inverted[term].append((idx, w))
 
-    def max_similarity(self, text: str) -> tuple[float, dict[str, str] | None]:
+    def max_similarity(self, text: str) -> tuple[float, dict[str, Any] | None]:
         tokens = _tokenize(text)
         if not tokens or not self.chunks:
             return 0.0, None
@@ -81,6 +88,41 @@ class ReferenceCorpusIndex:
 
         matched = self.chunks[best_idx] if best_idx is not None else None
         return best_score, {"source": matched["source"]} if matched else None
+
+    def top_k(self, query: str, k: int, chunk_filter: Any = None) -> list[tuple[float, dict[str, Any]]]:
+        """Return up to ``k`` corpus chunks best matching ``query``, ranked by
+        cosine similarity, highest first.
+
+        ``chunk_filter``, if given, is called as ``chunk_filter(chunk) -> bool``
+        and restricts which chunks are eligible before ranking (e.g. "only
+        chunks tagged with this Knowledge Topic code"). Used by
+        ``src/retrieval/evidence_selector.py`` to retrieve real learner-guide
+        passages for a blueprint section instead of a single "most similar"
+        result - see that module for how this feeds evidence-grounded
+        generation.
+        """
+        tokens = _tokenize(query)
+        if not tokens or not self.chunks:
+            return []
+        tf = Counter(tokens)
+        weights = {term: count * self._idf.get(term, 0.0) for term, count in tf.items() if term in self._idf}
+        if not weights:
+            return []
+        query_norm = math.sqrt(sum(w * w for w in weights.values())) or 1.0
+
+        scores: dict[int, float] = defaultdict(float)
+        for term, qw in weights.items():
+            for chunk_idx, cw in self._inverted.get(term, []):
+                if chunk_filter is not None and not chunk_filter(self.chunks[chunk_idx]):
+                    continue
+                scores[chunk_idx] += qw * cw
+
+        ranked = sorted(
+            ((raw_score / (query_norm * self._chunk_norm[idx]), idx) for idx, raw_score in scores.items()),
+            key=lambda pair: pair[0],
+            reverse=True,
+        )
+        return [(score, self.chunks[idx]) for score, idx in ranked[:k] if score > 0.0]
 
 
 def check_paper_novelty(

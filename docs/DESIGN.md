@@ -7,21 +7,29 @@ for what the supplied reference material does and does not establish.
 
 ```
 sdev/ (read-only)
-  -> ingestion (src/ingestion/pdf_loader.py)          - extract text, never write to sdev/
+  -> ingestion (src/ingestion/pdf_loader.py)          - extract text per PAGE, never write to sdev/
   -> reference analysis (src/analysis/)                - deterministic regex/heuristic parse
   -> artifacts/reference-analysis.json                 - compact, reusable intermediate
+  -> page-tagged chunks (src/analysis/reference_analyzer.extract_corpus_chunks)
+       -> artifacts/reference-corpus-chunks.json        - page + Knowledge-Topic-tagged passages
   -> blueprint (src/generation/blueprint.py)            - config + analysis -> assessment spec
   -> artifacts/blueprint.json
-  -> question generation (src/generation/question_generator.py)  - 1 provider call per section
+  -> evidence retrieval (src/retrieval/evidence_selector.py) - per section, real page-cited
+       passages retrieved from the chunks above (NEW - see docs/DESIGN_NOTE.md section B)
+  -> question generation (src/generation/question_generator.py)  - 1 provider call per section,
+       prompt carries real evidence; grounding + cross-paper novelty checked before acceptance
   -> memo generation (src/generation/memo_generator.py)           - 1 provider call per question
-  -> validation (src/validation/*)                      - schema, marks, coverage, novelty
+  -> validation (src/validation/*)                      - schema, marks, coverage, grounding, novelty
   -> quality review (src/validation/quality_reviewer.py) - 1 provider call, judgement-only
   -> rendering (src/rendering/*)                        - Markdown (+ optional PDF)
 ```
 
 Each arrow is a real module boundary with its own CLI subcommand
 (`analyze`, `generate`, `validate`, `review`, `render`, or `pipeline` to run
-all of them). Nothing upstream of `generate` calls an LLM.
+all of them). Nothing upstream of `generate` calls an LLM - evidence
+retrieval included, it is pure deterministic TF-IDF ranking over
+already-extracted, already-paginated text (see docs/DESIGN_NOTE.md, "How
+the system finds and retrieves learner-guide pages/passages").
 
 ## Why reference analysis is deterministic, not LLM-based
 
@@ -131,6 +139,53 @@ This is a structural/set-membership contract, not an NLP or semantic check
 - deliberately so, per the same "don't trust what a schema can't verify"
 principle used everywhere else in this pipeline.
 
+## Retrieval-grounded generation (Phase 1 evaluator rework)
+
+An earlier version of this pipeline sent the LLM only a section's title,
+occupational context, and Knowledge Topic CODE/TITLE labels (e.g.
+"KM-06-KT02 (Object-Oriented Programming)") and let it invent the actual
+technical content from general knowledge - the model never saw a single
+sentence of the supplied Learner Guides. An evaluator correctly rejected
+this: it does not satisfy "generate from the reference material," and it
+also meant Papers 1 and 2 were identical (MockProvider's fixed 2-variant
+fixture bank, selected by `seed % 2`, with no evidence input to vary on),
+and the cover stated `NQF Level [4, 5]` (the raw per-module span) instead of
+the qualification's single assessed level.
+
+The fix, in full, is documented in **`docs/DESIGN_NOTE.md`** (which
+evaluator feedback specifically asks for and which repeats none of this
+section's detail): page-tagged corpus chunking, TF-IDF evidence retrieval
+scoped to each section's required outcomes, evidence embedded in the
+generation prompt with real page citations, grounding checked both at
+generation time and independently re-verified at `validate` time
+(`src/validation/grounding_validator.py`), cross-paper novelty tracked in
+`artifacts/generation-history.json` so a later paper cannot collapse into an
+earlier one, and the cover's NQF level fixed to a single config value
+(`configs/software_developer.json`'s `nqf_level`) rather than derived from
+the reference analysis's per-module span.
+
+No new dependency was introduced for any of this - retrieval reuses the
+same lightweight, dependency-free TF-IDF index already built for novelty
+screening (`src/validation/novelty_checker.ReferenceCorpusIndex`).
+
+**This was still only half the source-of-truth guarantee**: the above
+grounds the QUESTION, but the memo's model ANSWERS were generated from the
+finished question JSON alone, with no retrieved evidence and no grounding
+check - a later audit found the API layer (`api/service.py`) was also
+calling the engine with none of this wired in at all (no evidence, no
+cross-paper history), so a real Generate-button request produced an
+entirely ungrounded paper and memo despite the CLI path being correct. Both
+gaps are fixed: `api/service.py` now calls the SAME shared retrieval/
+history functions `src/cli.py` uses
+(`src.retrieval.evidence_selector.load_retrieval_index`/
+`build_evidence_by_section`, `src.validation.cross_paper_novelty.
+load_history`/`record_paper`/`write_history`), and a second, independent
+retrieval pass grounds every model answer in real, question-targeted
+learner-guide evidence, checked before acceptance and independently
+re-verified at `validate` time - see **`docs/DESIGN_NOTE.md` section C2**
+for the full answer-side design and a real worked example, and
+`src/validation/answer_grounding_validator.py` for the re-check.
+
 ## Reference handling and prompt-injection defense
 
 Reference documents are UNTRUSTED DATA end-to-end. Four channels are kept
@@ -141,18 +196,17 @@ see `docs/SECURITY-AUDIT.md` 6.2 for the finding that corrected this):
    written by this project, sent as the `system` message to the LLM. Not
    overridable by anything in categories 2-4.
 2. **Reference-derived data** - text mechanically extracted from `sdev/`
-   PDFs. Most of it (raw page text) is only ever used as input to
-   deterministic regex parsing (`reference_analyzer.py`) or as the corpus
-   for the lexical novelty checker, and never reaches an LLM prompt. One
-   narrower piece - Knowledge Topic titles/codes - genuinely IS
-   interpolated into `prompts/generate_questions.txt`'s user message (as
-   the section's outcome/competency list) when `AnthropicProvider` is
-   used. This was a real, if low-probability-given-the-current-benign-
-   corpus, gap identified during the security audit: nothing previously
-   capped its length or stripped control characters before it could reach
-   a prompt. Fixed: `_normalize_title` now bounds length
-   (`MAX_REFERENCE_DERIVED_TEXT_LENGTH`) and strips control characters at
-   the point of extraction, and the prompt itself now wraps this data in
+   PDFs. Two pieces genuinely reach an LLM prompt when `AnthropicProvider`
+   is used: Knowledge Topic titles/codes (the section's outcome/competency
+   list), and - since the retrieval-grounded generation rework - the
+   retrieved GUIDE_EVIDENCE passages themselves
+   (`src/retrieval/evidence_selector.py`). Both are bounded before they can
+   reach a prompt: KT titles by `_normalize_title`
+   (`MAX_REFERENCE_DERIVED_TEXT_LENGTH`, strips control characters at
+   extraction time), evidence passages by `SecurityConfig.
+   max_evidence_passage_chars` (truncated in `evidence_selector._truncate`)
+   and capped in count by `MAX_EVIDENCE_BLOCK_ITEMS` /
+   `evidence_passages_per_section`. The prompt wraps ALL of this in
    explicit `<<REFERENCE_DATA>>...<<END_REFERENCE_DATA>>` delimiters with a
    literal instruction that content inside them is never a command,
    regardless of phrasing.
@@ -165,13 +219,17 @@ see `docs/SECURITY-AUDIT.md` 6.2 for the finding that corrected this):
 4. **Generated content** - LLM output. Treated as untrusted until it passes
    JSON parsing, then schema validation, then the deterministic validators.
 
-Because `MockProvider` (what this project actually runs, given no API key
-is configured) never sends anything to a real model, the practical
-exposure of channel 2's narrow gap is currently nil - but the fix is real,
-tested (`tests/test_security_prompt_injection.py`), and in place for the
-day a real key is configured. The delimiter/instruction pattern is applied
-consistently across all three real prompt templates, not just the one
-where the gap was found.
+`MockProvider` (the offline default, and the only provider automated tests
+are ever allowed to use - see `tests/conftest.py`'s test-environment
+isolation) never sends anything to a real model, so this defense is inert
+during tests by design. Real generation - `LLM_PROVIDER=anthropic`/
+`gemini`/`groq` with a real key configured, used for the actual Paper 1/2
+runs - does send channel 2 content to a real model, which is exactly why
+this defense is real and tested
+(`tests/test_security_prompt_injection.py`), not speculative. The
+delimiter/instruction pattern is applied consistently across all three real
+prompt templates (`generate_questions.txt`, `generate_memo.txt`,
+`review.txt`), not just the one where the gap was originally found.
 
 ## Anti-copying approach and its limits
 
@@ -212,11 +270,17 @@ Deterministic, ordered, fail-fast:
 3. `coverage_validator` - blueprint outcome/competency coverage, expected
    question counts, empty/malformed fields, duplicate question text, and the
    "no false official-status claim" check.
-4. `novelty_checker` - lexical overlap screening (see above).
-5. `quality_reviewer` - the one LLM-judgement stage, run last, over content
+4. `novelty_checker` - lexical overlap screening against the source corpus
+   (see above).
+5. `grounding_validator` - independent re-check that every question's
+   `grounding` citations actually exist in the ingested corpus (no
+   fabricated pages) and that the question's overlap with its cited
+   evidence falls in the expected range (derived, not invented; transformed,
+   not copied) - see docs/DESIGN_NOTE.md section D.
+6. `quality_reviewer` - the one LLM-judgement stage, run last, over content
    that has already passed every deterministic gate.
 
-`python -m src.cli validate` runs 1-4 and writes
+`python -m src.cli validate` runs 1-5 and writes
 `artifacts/validation-report.json` with a `passed: bool` and a flat list of
 named `checks`, each independently inspectable - exactly the shape asked
 for in the brief. The CLI exits non-zero on any failed check.
@@ -235,23 +299,26 @@ provider-agnostic path regardless of which provider is configured.
 python -m src.cli generate --qualification software_developer --paper-number 3 --seed 20270101
 ```
 
-sends the same blueprint-derived prompts to the live model, which can
-produce genuinely new scenario content per call, still validated by the
-same deterministic checks afterward.
+sends the same blueprint-derived prompts to the live model, together with
+freshly retrieved evidence for seed 20270101 (`src/cli.py:
+_build_evidence_by_section`), and now ALSO checks the result against
+`artifacts/generation-history.json` (every question from Paper 1 and Paper
+2's runs) before accepting it - see docs/DESIGN_NOTE.md section D. A
+collision is rejected and regenerated automatically, not left to the
+model's own variance alone.
 
-**With MockProvider** (the default, and what every artifact under `output/`
-in this project was generated with): be precise about what "Paper 3
-variety" actually means here. MockProvider is a deterministic, offline,
-FIXTURE-based stand-in, not a generation engine - see
-`src/providers/mock_provider.py`'s module docstring. Each section currently
-holds exactly 2 hand-written scenario variants, selected by
-`seed % len(bank)`. Running the command above with MockProvider therefore
-picks between those same 2 pre-written options per section - it does NOT
-synthesize new content, and a given seed always reproduces the same paper
-(useful for tests and reproducibility, not for genuine content variety).
-Real new variety under MockProvider requires manually appending another
-hand-written entry to the relevant `_SECTION_*_VARIANTS` list; genuine
-open-ended variety requires switching to a real provider.
+**With MockProvider**: still a deterministic, offline, FIXTURE-based
+stand-in, not a generation engine - see `src/providers/mock_provider.py`'s
+module docstring, and never presented as evidence a paper is AI-generated
+(the paper JSON's `generation_meta.provider` always says `"mock"`). Each
+section still holds exactly 2 hand-written scenario variants, selected by
+`seed % len(bank)`, so genuine open-ended content variety still requires a
+real provider. What DOES change under this rework: when real evidence is
+supplied (the CLI's normal `generate` path always supplies it), MockProvider
+weaves the retrieved passage into its fixture output so the SAME grounding
+and cross-paper-novelty checks described above apply uniformly to every
+provider, not just the real one - see `mock_provider.py._generate_question`
+and `tests/test_question_generator_grounding.py`.
 
 ## Security boundaries
 

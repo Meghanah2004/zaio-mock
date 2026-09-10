@@ -95,7 +95,22 @@
         "difficulty": {"type": "string", "enum": ["foundational", "intermediate", "advanced"]},
         "outcomes": {"type": "array", "items": {"type": "string", "maxLength": 100}, "minItems": 1, "maxItems": 100},
         "competencies": {"type": "array", "items": {"type": "string", "maxLength": 300}, "minItems": 1, "maxItems": 100},
-        "expected_response_type": {"type": "string", "minLength": 1, "maxLength": 200}
+        "expected_response_type": {"type": "string", "minLength": 1, "maxLength": 200},
+        "grounding": {
+          "type": "array",
+          "description": "Provenance: real learner-guide passages this question was generated from - never fabricated (src/validation/grounding_validator.py cross-checks document/page against the ingested corpus). Empty for papers generated without retrieval (test mode / API layer - see docs/DESIGN.md).",
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "required": ["document", "page", "passage", "reason"],
+            "properties": {
+              "document": {"type": "string", "maxLength": 300},
+              "page": {"type": "integer", "minimum": 1},
+              "passage": {"type": "string", "maxLength": 2000},
+              "reason": {"type": "string", "maxLength": 300}
+            }
+          }
+        }
       }
     }
   }

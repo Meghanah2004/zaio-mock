@@ -1,0 +1,31 @@
+{
+  "services": {
+    "frontend": {
+      "root": "frontend/",
+      "framework": "vite"
+    },
+    "backend": {
+      "root": "./",
+      "entrypoint": "api/app.py",
+      "functions": {
+        "api/app.py": {
+          "excludeFiles": "{.env,.env.*,sdev/**,tests/**,output/**,frontend/**}"
+        }
+      }
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": {
+        "service": "backend"
+      }
+    },
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "frontend"
+      }
+    }
+  ]
+}

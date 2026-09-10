@@ -2,6 +2,8 @@
   "qualification_key": "software_developer",
   "_assumption_notice": "Every numeric value in this file is an IMPLEMENTATION ASSUMPTION for Phase 1. None of these numbers (duration, total marks, section marks, pass mark) are stated in the supplied reference material - see docs/reference-analysis.md section 5 and docs/DESIGN.md. They exist so the pipeline is reproducible and machine-readable, not because they were discovered in sdev/.",
   "paper_title": "Mock EISA Paper - Software Developer (Practice/Formative Use Only)",
+  "_nqf_level_notice": "Per-module NQF level varies across the 11 supplied Learner Guides (KM-04/05 and KM-10-12 at NQF 4, KM-06-09 at NQF 5 - see docs/reference-analysis.md fact F4). The four modules this paper's technical sections (B/C/D/E) are actually built from - KM-06 HTML5/CSS/JS/OOP, KM-07 UML, KM-08 databases, KM-09 SDLC/algorithms/security - are ALL NQF 5, and that is the qualification's assessed occupational-competence level for this EISA. nqf_level below is therefore a single fixed value (5), not the raw span across every supplied module, which is what the paper cover must state.",
+  "nqf_level": 5,
   "duration_minutes": 180,
   "total_marks": 100,
   "pass_mark_percent": 50,

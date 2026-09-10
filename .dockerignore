@@ -1,0 +1,21 @@
+# Never let secrets or dev-only material enter a build context, even
+# though Dockerfile already only COPYs an explicit allowlist of
+# directories (defense in depth, not the only control).
+.env
+.env.*
+!.env.example
+
+.git
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# Runtime-generated, not shipped in the image (see Dockerfile).
+artifacts/
+output/
+
+frontend/
+node_modules/

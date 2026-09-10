@@ -2,8 +2,17 @@
 
 Uses high test-only paper numbers (900+) so test runs never overwrite the
 canonical Phase 1 deliverable at paper_number=2 - see docs/API.md.
-MockProvider is always used here (no ANTHROPIC_API_KEY in this
-environment), so every call is fast and fully offline.
+MockProvider is always used here (see tests/conftest.py's session-wide test
+isolation, which forces LLM_PROVIDER=mock regardless of the developer's
+local .env), so every call is fast and fully offline.
+
+Since the RAG rework, api/service.py performs real grounding, marks,
+coverage, AND lexical novelty screening against the real sdev/ corpus -
+"pass" and "flag_for_review" are both non-blocking outcomes of that real
+screen (only "regenerate" blocks), so a test asserting an exact status
+asserts "flag_for_review" never happens, which is not a guarantee this
+pipeline makes or should make - see
+src/validation/novelty_checker.py's own docstring.
 """
 from __future__ import annotations
 
@@ -24,7 +33,10 @@ def test_valid_generation_request_succeeds():
     assert body["total_marks"] == 100
     assert body["validation_passed"] is True
     assert body["deterministic_checks_total"] > 0
-    assert body["novelty_status"] == "pass"
+    # "regenerate" is the only blocking novelty outcome (see module
+    # docstring) - both "pass" and "flag_for_review" mean generation
+    # succeeded and validation was not blocked by novelty.
+    assert body["novelty_status"] in ("pass", "flag_for_review")
     assert body["quality_review_approved"] is True
     assert body["pdf_available"] is False  # pdf: false was requested
 

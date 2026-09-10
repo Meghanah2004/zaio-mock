@@ -363,23 +363,92 @@ def _assessment_instrument_findings(all_text: str) -> AssessmentInstrumentFindin
 
 _SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?])\s+|\n{2,}")
 
+# Reuses SECTION_HEADER_RE's page-level KT header pattern (see
+# _parse_knowledge_topics above, which applies the same pattern to the
+# whole-document text). Applied per-PAGE here so a chunk can be tagged with
+# the Knowledge Topic actually governing that page - the supplied Learner
+# Guides introduce a "SECTION N: KM-xx-KTyy: <title> <weight>%" header on
+# the page a topic begins and hold that topic until the next such header
+# (verified against the real corpus: e.g. Module 6's KM-06-KT06 "HTML5"
+# header lands on page 62 and holds until KM-06-KT07's header on page 74).
+_PAGE_KT_HEADER_RE = re.compile(r"SECTION\s+\d+\s*:\s*(KM-\d+-KT-?\d+)", re.IGNORECASE)
 
-def extract_corpus_chunks(report: IngestionReport, min_words: int = 8, max_chunks: int = 25000) -> list[dict[str, str]]:
-    """Split every extracted document into short text chunks for novelty checking.
 
-    This is a lightweight, local (non-LLM) intermediate artifact: the
-    novelty checker compares generated question text against these chunks
-    instead of re-parsing the source PDFs on every validation run.
+def _append_chunk(
+    chunks: list[dict[str, Any]],
+    buffer: list[str],
+    source: str,
+    page_number: int,
+    kt_code: str | None,
+    min_words: int,
+) -> None:
+    text = " ".join(buffer).strip()
+    if len(text.split()) >= min_words:
+        chunks.append({"source": source, "page": page_number, "kt_code": kt_code, "text": text})
+
+
+def extract_corpus_chunks(
+    report: IngestionReport,
+    min_words: int = 8,
+    target_chunk_words: int = 50,
+    max_chunks: int = 25000,
+) -> list[dict[str, Any]]:
+    """Split every extracted document into page-tagged text chunks.
+
+    This is a lightweight, local (non-LLM) intermediate artifact serving TWO
+    consumers:
+      1. src/validation/novelty_checker.py - unchanged use, screens generated
+         question text for lexical overlap with the supplied corpus.
+      2. src/retrieval/evidence_selector.py - NEW use, retrieves the actual
+         learner-guide passages (with real page numbers) handed to the LLM
+         as grounding evidence at generation time.
+
+    Consecutive sentences on the SAME page are grouped into one chunk of
+    roughly ``target_chunk_words`` words (never crossing a page boundary,
+    so page/kt_code attribution stays exact) rather than one chunk per
+    sentence. One-sentence-per-chunk was tried first and produced
+    evidence too shallow to write a real question from - a short, isolated,
+    high-keyword-density sentence (e.g. "CSS allows you to apply styles to
+    web pages.") can outrank a substantive explanatory paragraph in a
+    single-sentence TF-IDF ranking purely because it repeats the query term,
+    even though it carries almost no teachable content. Grouping into
+    small paragraphs fixes this without changing what novelty screening
+    catches - phrase-level copying is still well within a ~50-word window.
+
+    Each chunk keeps its source document, PAGE NUMBER (never fabricated -
+    taken directly from src.ingestion.pdf_loader's per-page extraction), and,
+    for a "Module N-Learner Guide.pdf" document, the Knowledge Topic code
+    governing the page it came from (``kt_code``, or ``None`` if the page
+    precedes the first KT header in that document, e.g. front matter).
     """
-    chunks: list[dict[str, str]] = []
+    chunks: list[dict[str, Any]] = []
     for doc in report.documents:
-        for line in _SENTENCE_SPLIT_RE.split(doc.full_text):
-            text = re.sub(r"\s+", " ", line).strip()
-            if len(text.split()) < min_words:
-                continue
-            chunks.append({"source": doc.relative_path, "text": text})
-            if len(chunks) >= max_chunks:
-                return chunks
+        is_module_doc = bool(MODULE_FILENAME_RE.search(Path(doc.relative_path).name))
+        current_kt: str | None = None
+        for page in doc.pages:
+            if is_module_doc:
+                header_match = _PAGE_KT_HEADER_RE.search(page.text)
+                if header_match:
+                    current_kt = header_match.group(1).upper().replace("KT-", "KT")
+            page_text = PAGE_STAMP_RE.sub(" ", page.text)
+            sentences = [
+                re.sub(r"\s+", " ", s).strip() for s in _SENTENCE_SPLIT_RE.split(page_text)
+            ]
+            sentences = [s for s in sentences if s]
+
+            page_kt_code = current_kt if is_module_doc else None
+            buffer: list[str] = []
+            for sentence in sentences:
+                buffer.append(sentence)
+                if len(" ".join(buffer).split()) >= target_chunk_words:
+                    _append_chunk(chunks, buffer, doc.relative_path, page.page_number, page_kt_code, min_words)
+                    buffer = []
+                    if len(chunks) >= max_chunks:
+                        return chunks
+            if buffer:
+                _append_chunk(chunks, buffer, doc.relative_path, page.page_number, page_kt_code, min_words)
+                if len(chunks) >= max_chunks:
+                    return chunks
     return chunks
 
 

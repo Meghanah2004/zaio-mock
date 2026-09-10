@@ -1,10 +1,7 @@
 {
   "paper_id": "mock-eisa-software_developer-paper-02",
   "qualification": "Occupational Certificate: Software Developer",
-  "nqf_level": [
-    4,
-    5
-  ],
+  "nqf_level": 5,
   "status_disclaimer": "MOCK / PRACTICE ASSESSMENT ONLY. This paper is generated for formative self-assessment and exam-preparation purposes. It is NOT an official QCTO External Integrated Summative Assessment (EISA), is not moderated by MICT SETA, and confers no qualification status or credit.",
   "duration_minutes": 180,
   "total_marks": 100,
@@ -65,8 +62,8 @@
           "section_id": "A",
           "question_number": "A1",
           "type": "code_analysis",
-          "scenario": "You are a junior developer at Thusong Logistics, a fleet-tracking startup. Before extending the driver dashboard, your lead asks you to work through some numeric and logic checks on paper so the team can confirm your understanding before you touch the codebase.",
-          "question": "Answer each part below, showing your working.",
+          "scenario": "You are a junior developer at DataWave Solutions, tasked with adding a utility that validates numeric sensor IDs before they are stored. The utility must convert a decimal ID to binary, determine if the ID is even using the modulus operator, and handle mixed numeric types correctly.",
+          "question": "Complete the following tasks to demonstrate the calculations and code you would write for this utility.",
           "marks": 15,
           "difficulty": "foundational",
           "outcomes": [
@@ -83,31 +80,57 @@
             "Mixing types",
             "Programming basics"
           ],
-          "expected_response_type": "worked_calculation",
+          "expected_response_type": "structured_text",
+          "grounding": [
+            {
+              "document": "Module 4-Learner Guide.pdf",
+              "page": 22,
+              "passage": "SECTION 2: KM-04-KT02: Conversion between decimal and binary systems 5% Learning Outcome Topic elements to be covered include: \u2022 KT0201 Introduction to binary numbers \u2022 KT0202 Performing addition and subtraction of positive whole numbers in binary \u2022 KT0203 Binary arithmetic \u2022 KT0204 Use of BODMAS KT0201 Introduction to binary numbers What is a Binary Number System?",
+              "reason": "Retrieved for KM-04-KT02 (Conversion between decimal and binary systems)"
+            },
+            {
+              "document": "Module 4-Learner Guide.pdf",
+              "page": 66,
+              "passage": "\uf0b7 A non-associative operator cannot be combined with other operators of the same precedence KT0704 Apply precedence: \uf0b7 Parentheses \uf0b7 Multiply and divide \uf0b7 Add and subtract Operator precedence.",
+              "reason": "Retrieved for KM-04-KT07 (Operator precedence)"
+            },
+            {
+              "document": "Module 4-Learner Guide.pdf",
+              "page": 74,
+              "passage": "SECTION 9: KM-04-KT09 : Modulus 10% Learning Outcome Topic elements to be covered include: \u2022 KT0901 Definition and terminology \u2022 KT0902 Purpose and use \u2022 KT0903 Modulus abbreviated as \u201cmod\u201d \u2022 KT0904 % application \u2022 KT0905 (==) application \u2022 KT0906 Modulus in programming KT0901 Definition and terminology What is modulus?",
+              "reason": "Retrieved for KM-04-KT09 (Modulus)"
+            },
+            {
+              "document": "Module 4-Learner Guide.pdf",
+              "page": 81,
+              "passage": "The concept appears in ergodic theory\u2014the study of stochastic processes and measure-preserving dynamical systems. Several different definitions for mixing exist, including strong mixing, weak mixing and topological mixing, with the last not requiring a measure to be defined. Some of the different definitions of mixing can be arranged in a hierarchical order; thus, strong mixing implies weak mixing.",
+              "reason": "Retrieved for KM-04-KT11 (Mixing types)"
+            }
+          ],
           "sub_questions": [
             {
               "id": "1",
-              "prompt": "A vehicle's onboard unit reports an odometer delta as the binary value 10110. Working from the rightmost digit, determine its decimal equivalent and show the contribution of each bit position.",
+              "prompt": "Convert the decimal number 156 to its binary representation.\nProvide the binary digits as a continuous string (e.g., 1010).",
               "marks": 3,
-              "expected_response_type": "worked_calculation"
+              "expected_response_type": "numeric_answer"
             },
             {
               "id": "2",
-              "prompt": "A teammate hard-codes a trip-cost estimate as `distance = 23 % 4 * 2 - 5 + 1`. Work out the value `distance` ends up with. For each step, state which single operation you resolved and why it had to happen at that point relative to the others.",
-              "marks": 4,
-              "expected_response_type": "worked_calculation"
+              "prompt": "Evaluate the expression below step\u2011by\u2011step, observing operator precedence (parentheses, multiplication/division, addition/subtraction, and modulus). Show the intermediate result after each operation.\nExpression: 8 + 4 * 2 - (6 / 3) % 4",
+              "marks": 5,
+              "expected_response_type": "step_by_step_calculation"
             },
             {
               "id": "3",
-              "prompt": "A colleague asks you to review their pull request without running it. Step through the following block one line at a time and record every value it prints, in the order it prints them:\n```\nspeed = 50\nchecks = 0\nwhile checks < 4:\n    if speed > 60:\n        print(\"over limit\")\n    speed = speed + 5\n    checks = checks + 1\n```",
+              "prompt": "In many programming languages the division operator produces a floating\u2011point result when the operands are not both integers. Explain what would happen to the result of the sub\u2011expression (6 / 3) in the expression above if the language treats division as floating\u2011point, and how the subsequent modulus operation would be affected by mixing a floating\u2011point value with an integer.",
               "marks": 4,
-              "expected_response_type": "trace_table_or_output_list"
+              "expected_response_type": "explanatory_text"
             },
             {
               "id": "4",
-              "prompt": "In Python, a colleague wrote this line to log a trip summary:\n`log = \"Trip length: \" + 12.3 + \" km\"`\nRunning it raises `TypeError: can only concatenate str (not \"float\") to str`. Explain precisely why Python raises this error here, and rewrite the line so it runs successfully and produces the string `\"Trip length: 12.3 km\"`.",
-              "marks": 4,
-              "expected_response_type": "explanation_and_corrected_code"
+              "prompt": "Write a short code snippet (in JavaScript syntax) that:\n1. Accepts a decimal sensor ID stored in a variable `sensorId`.\n2. Converts `sensorId` to a binary string.\n3. Uses the modulus operator to check if `sensorId` is even.\n4. Logs to the console a message that includes the binary string and whether the ID is even.\nOnly include the necessary statements; do not add extra comments or I/O handling.",
+              "marks": 3,
+              "expected_response_type": "code_snippet"
             }
           ]
         }
@@ -149,8 +172,8 @@
           "section_id": "B",
           "question_number": "B1",
           "type": "scenario_extended",
-          "scenario": "A small independent bookshop, Paper Trail Books, wants a simple 'Reading Club Sign-Up' feature added to their existing website so visitors can register interest without an account. You have been asked to build the front end for this feature.",
-          "question": "Complete the following front-end development tasks for the Reading Club Sign-Up feature.",
+          "scenario": "EcoTransit Logistics is creating an interactive route\u2011planner widget for its internal transport\u2011management portal. The widget must allow users to view a list of waypoints, add new ones, and reorder them by dragging. The front\u2011end must be built with HTML5, styled with CSS (including a simple animation), and powered by JavaScript using an object\u2011oriented class to represent each waypoint.",
+          "question": "Develop the front\u2011end implementation for the route\u2011planner widget as described, covering the class design, HTML5 markup, CSS styling (with animation), and JavaScript functionality for rendering and drag\u2011and\u2011drop reordering.",
           "marks": 30,
           "difficulty": "intermediate",
           "outcomes": [
@@ -165,31 +188,57 @@
             "CSS",
             "JavaScript"
           ],
-          "expected_response_type": "html_code_and_short_explanation",
+          "expected_response_type": "code_project",
+          "grounding": [
+            {
+              "document": "Module 6-Learner Guide.pdf",
+              "page": 16,
+              "passage": "Each distinct logic sequence is known as a method. Objects can communicate with well-defined interfaces called messages. What is the structure of object-oriented programming? The structure, or building blocks, of object-oriented programming include the following: \uf0b7 Classes are user-defined data types that act as the blueprint for individual objects, attributes and methods.",
+              "reason": "Retrieved for KM-06-KT02 (Object-Oriented Programming)"
+            },
+            {
+              "document": "Module 6-Learner Guide.pdf",
+              "page": 64,
+              "passage": "Crestron HTML5 User Interface allows for the separation of front-end and back-end development to provide flexibility for dealers and integrators. \uf0b7 Changes on the front-end or back-end can be deployed independently. \uf0b7 User interfaces can be designed and tested using control system emulation.",
+              "reason": "Retrieved for KM-06-KT06 (HTML5)"
+            },
+            {
+              "document": "Module 6-Learner Guide.pdf",
+              "page": 86,
+              "passage": "Because these two times are so important, they have special aliases: from and to. Both are optional. If from/0% or to/100% is not specified, the browser starts or finishes the animation using the computed values of all attributes. Internal Assessment Criteria and Weight \u2022 IAC0701 Explain how to use CSS to apply basic styling to a web page \u2022 IAC0702 Explain how to use CSS to style the layout, text, and background of a web page (Weight 15%)",
+              "reason": "Retrieved for KM-06-KT07 (CSS)"
+            },
+            {
+              "document": "Module 6-Learner Guide.pdf",
+              "page": 89,
+              "passage": "\uf0b7 Richer interfaces \u2212 You can use JavaScript to include such it ems as drag-and-drop components and sliders to give a Rich Interface to your site visitors. Limitations of JavaScript We cannot treat JavaScript as a full -fledged programming language. It lacks the following important features \u2212 \uf0b7 Client-side JavaScript does not allow the reading or writing of files.",
+              "reason": "Retrieved for KM-06-KT08 (JavaScript)"
+            }
+          ],
           "sub_questions": [
             {
               "id": "1",
-              "prompt": "Write a semantic HTML5 form that captures: full name (required), email address (required, must be a valid email format), and favourite genres as checkboxes for 'Fiction', 'Non-Fiction' and 'Poetry' - the form's requirement is that at least one genre MUST be selected before the form can be submitted. Use appropriate input types and attributes so the browser natively validates the name and email fields without any JavaScript. Then, in 1-2 sentences, state whether HTML5's `required` attribute can, by itself, enforce this at-least-one-checkbox requirement, and explain what you would need to add to actually enforce it.",
-              "marks": 6,
-              "expected_response_type": "html_code_and_short_explanation"
-            },
-            {
-              "id": "2",
-              "prompt": "Using CSS Flexbox, style the form so that on small screens each label appears above its input (stacked, single column), and on screens 768px and wider the labels appear beside their inputs in a single row per field. Include the media query and explain in one sentence why Flexbox is a suitable choice here.",
-              "marks": 6,
-              "expected_response_type": "css_code_and_short_explanation"
-            },
-            {
-              "id": "3",
-              "prompt": "Write JavaScript that intercepts the form's submit event, prevents the default page reload, checks that the name field is not empty and the email field contains an '@' and at least one '.' after it, and - if invalid - displays an inline error message next to the field without using `alert()`. If valid, log the form data to the console.",
-              "marks": 8,
+              "prompt": "Create a JavaScript class named **Waypoint**. The class should have properties for **name**, **latitude**, and **longitude** and a method **distanceTo(otherWaypoint)** that returns the distance between the two waypoints (you may use a simple Euclidean calculation). Provide the complete class definition.",
+              "marks": 10,
               "expected_response_type": "javascript_code"
             },
             {
+              "id": "2",
+              "prompt": "Write the HTML5 markup for the widget. Include a container element with id **route-planner**, an unordered list with class **waypoint-list** where each list item will represent a waypoint, and a button with id **add-waypoint** for adding new waypoints.",
+              "marks": 6,
+              "expected_response_type": "html_code"
+            },
+            {
+              "id": "3",
+              "prompt": "Provide the CSS required to:\n\u2022 Lay out the waypoint list vertically inside the container.\n\u2022 Style each list item with padding, a light background colour and a border.\n\u2022 Define a **fade\u2011in** animation that transitions opacity from 0 to 1 over 0.5\u202fs, and apply this animation to a list item when it is added to the DOM.\nInclude any necessary selectors and the @keyframes rule.",
+              "marks": 8,
+              "expected_response_type": "css_code"
+            },
+            {
               "id": "4",
-              "prompt": "You are given this object literal used to track a reading-club member:\n```javascript\nlet member = { name: \"Sipho\", booksRead: 2 };\n```\nRefactor this into an ES6 class named `Member` with a constructor, a private or underscore-convention field for `booksRead`, a getter for `booksRead`, and a setter that rejects negative values. Name the specific OOP principle your getter/setter design demonstrates and explain, in 1-2 sentences, why it matters here.",
-              "marks": 10,
-              "expected_response_type": "javascript_code_and_short_explanation"
+              "prompt": "Write JavaScript code that:\n(a) Instantiates three **Waypoint** objects with sample data.\n(b) Renders each waypoint as a list item inside the **waypoint-list** element.\n(c) Enables drag\u2011and\u2011drop reordering of the list items using the HTML5 Drag and Drop API.\n(d) Updates the order of the underlying **Waypoint** objects to match the new list order after a drop.\nOnly include the relevant code snippets; you may assume the class from sub\u2011question\u202f1 is already available.",
+              "marks": 6,
+              "expected_response_type": "javascript_code"
             }
           ]
         }
@@ -243,8 +292,8 @@
           "section_id": "C",
           "question_number": "C1",
           "type": "design_task",
-          "scenario": "A small clinic wants to introduce a simple appointment booking feature: a Patient may book an Appointment with a Doctor; if the requested slot is full, the request joins a waitlist and the Patient is notified when a slot opens up.",
-          "question": "Model the following aspects of the booking feature using UML.",
+          "scenario": "At FinTechCo, the development team is preparing the design for a new mobile banking app that allows customers to transfer funds between their accounts. Before coding begins, the junior developer is asked to produce UML artefacts to document the static structure and the interaction for the 'Transfer Funds' use case.",
+          "question": "Create the required UML artefacts for the 'Transfer Funds' feature as described below.",
           "marks": 15,
           "difficulty": "intermediate",
           "outcomes": [
@@ -256,16 +305,42 @@
             "Sequence diagrams"
           ],
           "expected_response_type": "structured_uml_description",
+          "grounding": [
+            {
+              "document": "Module 7-Learner Guide.pdf",
+              "page": 73,
+              "passage": "SECTION 4: KM-07-KT04: Classes and class diagrams 5% Learning Outcome Topic elements to be covered include: \u2022 KT0401 Definition of class \u2022 KT0402 Classes in UML \u2022 KT0403 Visibility \u2022 KT0404 Class state: attributes \u2022 KT0405 Class behaviours: operations \u2022 KT0406 Static parts of a class \u2022 KT0401 Definition of class Class diagram is a static diagram.",
+              "reason": "Retrieved for KM-07-KT04 (Classes and class diagrams)"
+            },
+            {
+              "document": "Module 7-Learner Guide.pdf",
+              "page": 74,
+              "passage": "Purpose of Class Diagrams The purpose of class diagram is to model the static view of an application. Class diagrams are the only diagrams which c an be directly mapped with object -oriented languages and thus widely used at the time of construction. UML diagrams like activity diagram, sequence diagram can only give the sequence flow of the application, however class diagram is a bit different.",
+              "reason": "Retrieved for KM-07-KT04 (Classes and class diagrams)"
+            },
+            {
+              "document": "Module 7-Learner Guide.pdf",
+              "page": 114,
+              "passage": "What is a sequence diagram in UML and what is its purpose?",
+              "reason": "Retrieved for KM-07-KT07 (Sequence diagrams)"
+            },
+            {
+              "document": "Module 7-Learner Guide.pdf",
+              "page": 117,
+              "passage": "Sequence Diagrams are time focus and they s how the order of the interaction visually by using the vertical axis of the diagram to represent time what messages are sent and when. Sequence Diagrams captures: \uf0b7 the interaction that takes place in a collaboration that either realizes a use case or an operation (instance diagrams or generic diagrams)",
+              "reason": "Retrieved for KM-07-KT07 (Sequence diagrams)"
+            }
+          ],
           "sub_questions": [
             {
               "id": "1",
-              "prompt": "Describe a class diagram for this feature. For each of `Patient`, `Doctor`, and `Appointment`, list at least 3 relevant attributes and 2 relevant methods, and describe the association(s) between the classes including multiplicity (e.g. one-to-many). You may describe this in structured text/UML notation; a hand-drawn diagram is not required.",
+              "prompt": "a) Identify the key classes involved in the transfer process, specifying appropriate visibility for attributes and operations, and indicate any static attributes or methods. Present this information in a textual class diagram description that could be directly translated into a class diagram.",
               "marks": 8,
               "expected_response_type": "structured_uml_description"
             },
             {
               "id": "2",
-              "prompt": "Describe, as a sequence of numbered messages between objects (as you would read off a sequence diagram), the flow when a Patient requests an Appointment slot that is full: include at least the Patient, a BookingService, the Doctor's schedule, and a notification step once a slot opens up.",
+              "prompt": "b) Using the classes identified, outline a sequence diagram that shows the interaction flow when a customer initiates a fund transfer, including the order of messages and the lifelines involved. Provide a step\u2011by\u2011step description of the messages with their sequence order.",
               "marks": 7,
               "expected_response_type": "structured_uml_description"
             }
@@ -301,9 +376,9 @@
           "id": "Q-D1",
           "section_id": "D",
           "question_number": "D1",
-          "type": "scenario_short_answer",
-          "scenario": "Thusong Logistics (from Section A) needs a small relational database to track vehicles and the maintenance depots that service them, so staff can quickly see which vehicles are due for a service.",
-          "question": "Complete the following database tasks.",
+          "type": "code_writing",
+          "scenario": "TechNova Solutions is building an inventory management system that tracks customer orders and product stock.",
+          "question": "You have been tasked with designing and maintaining the relational database components for the order management module.",
           "marks": 20,
           "difficulty": "intermediate",
           "outcomes": [
@@ -320,29 +395,55 @@
             "Understanding Data",
             "Administering a database"
           ],
-          "expected_response_type": "sql_code",
+          "expected_response_type": "structured_response",
+          "grounding": [
+            {
+              "document": "Module 8-Learner Guide.pdf",
+              "page": 10,
+              "passage": "Familiarity with Database Software is also helpful. \u2022 KT0105 Relational database concepts A relational database is a type of database that stores and provides access to data points that are related to one another. Relational databases are based on the relational model, an intuitive, straightforward way of representing data in tables.",
+              "reason": "Retrieved for KM-08-KT01 (Understanding core database concepts)"
+            },
+            {
+              "document": "Module 8-Learner Guide.pdf",
+              "page": 29,
+              "passage": "\uf0b7 First, specify the name of the database in which the table is created. The database_name must be the name of an existing database. If you don\u2019t specify it, the database_name defaults to the current database. \uf0b7 Second, specify the schema to which the new table belongs. \uf0b7 Third, specify the name of the new table.",
+              "reason": "Retrieved for KM-08-KT02 (Creating database)"
+            },
+            {
+              "document": "Module 8-Learner Guide.pdf",
+              "page": 79,
+              "passage": "You can use the delete process in combination with the archive or extract process to safely remove data from a database. You can save the data for future restoration, as required, or load tha t data into another database or set of tables. \uf0b7 Deleting data with Optim on distributed platforms Use Optim distributed to define and manage delete processing.",
+              "reason": "Retrieved for KM-08-KT03 (Manipulating data)"
+            },
+            {
+              "document": "Module 8-Learner Guide.pdf",
+              "page": 94,
+              "passage": "SECTION 4: KM-08-KT04 : Understanding Data 27% Learning Outcome Topic elements to be covered include: \u2022 KT0401 Normalizing a database \uf0b7 Understanding normalization \uf0b7 Understanding the first normal form \uf0b7 Understanding the second normal form Understanding the third normal form \uf0b7 Understanding the fourth normal form Understanding the fifth normal form \u2022 KT0402 Understanding primary, foreign, and composite keys \uf0b7 Understanding primary keys \uf0b7 Understanding foreign keys \uf0b7 Understanding composite primary keys \u2022 KT0403 Understanding clustered and non-clustered \uf0b7 Understanding clustered indexes \uf0b7 Understanding non-clustered indexes \uf0b7 Creating a non-clustered table \u2022 KT0401 Normalizing a database \uf0b7 Understanding normalization",
+              "reason": "Retrieved for KM-08-KT04 (Understanding Data)"
+            }
+          ],
           "sub_questions": [
             {
               "id": "1",
-              "prompt": "Write CREATE TABLE statements for `Depots` (depot_id, name, contact_email) and `Vehicles` (vehicle_id, registration, km_since_service, service_interval_km, depot_id). Choose appropriate data types and define the primary key on each table and the foreign key relationship between them.",
-              "marks": 6,
-              "expected_response_type": "sql_code"
+              "prompt": "Briefly explain why a relational database is appropriate for storing orders and related product information in this scenario.",
+              "marks": 5,
+              "expected_response_type": "short_answer"
             },
             {
               "id": "2",
-              "prompt": "Write a single SQL query that lists the vehicle registration, km_since_service, and depot contact email for every vehicle where km_since_service is greater than its service_interval_km, ordered by km_since_service descending.",
+              "prompt": "Write a SQL CREATE TABLE statement to create an \"Orders\" table in the existing database \"SalesDB\" under the schema \"dbo\". Include:\n- an OrderID column as the primary key,\n- a CustomerID column that references a \"Customers\" table primary key,\n- appropriate data types for OrderDate (date) and TotalAmount (decimal),\n- ensure the design follows third normal form (3NF).",
               "marks": 6,
               "expected_response_type": "sql_code"
             },
             {
               "id": "3",
-              "prompt": "Write an SQL statement that resets km_since_service to 0 for every vehicle serviced by depot_id = 2. Then, in 1-2 sentences, explain why omitting the WHERE clause on an UPDATE statement like this is dangerous.",
-              "marks": 4,
-              "expected_response_type": "sql_code_and_short_explanation"
+              "prompt": "Provide the SQL statements required to archive orders older than 30 days into an \"Orders_Archive\" table (with the same structure) and then delete those archived rows from the original \"Orders\" table.",
+              "marks": 5,
+              "expected_response_type": "sql_code"
             },
             {
               "id": "4",
-              "prompt": "Two dispatchers open the same vehicle record at the same time and both save changes. Describe one practical technique a database or application can use to prevent one person's update from silently overwriting the other's.",
+              "prompt": "Explain the difference between clustered and non\u2011clustered indexes and recommend which type should be used for the primary key of the \"Orders\" table, justifying your choice.",
               "marks": 4,
               "expected_response_type": "short_answer"
             }
@@ -407,8 +508,8 @@
           "section_id": "E",
           "question_number": "E1",
           "type": "scenario_extended",
-          "scenario": "Your team is midway through building a new appointment-reminder feature. The team lead shares a short project update and asks you to reflect on process and security.",
-          "question": "Answer the following questions about SDLC, algorithms, and secure coding.",
+          "scenario": "FinTech Solutions Ltd is adding a real\u2011time transaction validation feature to its mobile banking app that must check transaction amounts against user\u2011specific limits, flag suspicious patterns, and reject invalid requests.",
+          "question": "As the junior developer responsible for this feature, outline how you would apply the software development life cycle, design an appropriate algorithm, plan testing activities, and embed security controls.",
           "marks": 15,
           "difficulty": "advanced",
           "outcomes": [
@@ -423,25 +524,57 @@
             "Algorithms",
             "Security topics every software developer must"
           ],
-          "expected_response_type": "short_answer",
+          "expected_response_type": "structured_text",
+          "grounding": [
+            {
+              "document": "Module 9-Learner Guide.pdf",
+              "page": 25,
+              "passage": "In this blog, we\u2019ll take a look at the evolution of the software development life cycle and consider several current trends, including the integration of application security into the development process. The ideas about the software development life cycle (SDLC) have been around for a long time and many variations exist, such as the waterfall, and the V-model.",
+              "reason": "Retrieved for KM-09-KT02 (Software Development Life Cycle)"
+            },
+            {
+              "document": "Module 9-Learner Guide.pdf",
+              "page": 107,
+              "passage": "The testing phase of the software development lifecycle (SDLC) is where you focus on investigation and discovery. During the testing phase, developers find out whether their code and programming work according to customer requirements. And while it's not possible to solve all the failures you might find during the testing phase; it is possible to use the results from this phase to reduce the number of errors within the software program.",
+              "reason": "Retrieved for KM-09-KT09 (Phase 5: Testing)"
+            },
+            {
+              "document": "Module 9-Learner Guide.pdf",
+              "page": 195,
+              "passage": "SECTION 16: KM-09-KT16: Algorithms 5% Learning Outcome Topic elements to be covered include: \u2022 KT1601 Best languages to write algorithms \u2022 KT1602 Types \u2022 KT1603 Where to use algorithms \u2022 KT1604 Writing algorithms: \u2022 Problem definition \u2022 Data collection and processing \u2022 Logical approach \u2022 Develop a high-level algorithm \u2022 Refine by adding more data \u2022 Number of builds \u2022 Solution \u2022 KT1605 Algorithms and data structures \u2022 KT1606 Algorithms and problem solving \u2022 KT1607 Algorithms and cryptography \u2022 KT1608 Mathematical formulas in texts \u2022 KT1609 Tools for representing algorithms \u2022 KT1601 Best languages to write algorithms",
+              "reason": "Retrieved for KM-09-KT16 (Algorithms)"
+            },
+            {
+              "document": "Module 9-Learner Guide.pdf",
+              "page": 242,
+              "passage": "Secure software is the result of security aware software development processes where security is built in and thus software is developed with security in mind.",
+              "reason": "Retrieved for KM-09-KT18 (Security topics every software developer must)"
+            }
+          ],
           "sub_questions": [
             {
               "id": "1",
-              "prompt": "The update reads: 'We've mapped out every screen and written down exactly what data each one needs before anyone starts coding.' Identify which SDLC phase this describes and justify your answer in 1-2 sentences.",
+              "prompt": "Identify the SDLC phases that are most relevant for delivering this feature and briefly describe the key activities you would perform in each identified phase.",
               "marks": 4,
               "expected_response_type": "short_answer"
             },
             {
               "id": "2",
-              "prompt": "Write pseudocode for an algorithm that finds any duplicate phone number in a list of patient phone numbers and returns the first duplicate found (or a clear 'none found' result). State the time complexity of your algorithm using Big-O notation and justify it in one sentence.",
-              "marks": 6,
-              "expected_response_type": "pseudocode_and_complexity"
+              "prompt": "Create a high\u2011level algorithm for the core validation logic. Include a clear problem definition, the data you need to collect, and a step\u2011by\u2011step logical flow that could later be refined into code.",
+              "marks": 5,
+              "expected_response_type": "algorithm_description"
             },
             {
               "id": "3",
-              "prompt": "A colleague wrote this code to look up a patient by surname:\n```python\nquery = \"SELECT * FROM patients WHERE surname = '\" + user_input + \"'\"\n```\nIdentify the security vulnerability in this code and rewrite it using a safe approach (e.g. parameterised query), explaining briefly why your version is safe.",
-              "marks": 5,
-              "expected_response_type": "vulnerability_identification_and_corrected_code"
+              "prompt": "Propose a testing strategy for the feature that aligns with the testing phase of the SDLC. Mention the types of tests you would run and how the results would be used to improve the software.",
+              "marks": 4,
+              "expected_response_type": "testing_plan"
+            },
+            {
+              "id": "4",
+              "prompt": "List three security considerations you would incorporate during coding and testing to ensure the feature is built securely.",
+              "marks": 2,
+              "expected_response_type": "list"
             }
           ]
         }
@@ -563,8 +696,8 @@
           "section_id": "F",
           "question_number": "F1",
           "type": "scenario_short_answer",
-          "scenario": "A teammate says: 'We're behind schedule - let's skip logging what changed in this release so we can ship faster. No one reads those notes anyway.'",
-          "question": "Identify one workplace governance or professional-practice principle relevant to this situation, and explain in a short paragraph what you should do, and why.",
+          "scenario": "At ByteWave Technologies, a junior developer is working on an internal inventory\u2011tracking application. The team lead suggests skipping the mandatory audit\u2011log feature to speed up deployment, arguing that the data is low\u2011risk.",
+          "question": "As the junior developer, you must consider organisational governance, relevant workplace legislation, and workplace ethics before deciding how to respond.",
           "marks": 5,
           "difficulty": "foundational",
           "outcomes": [
@@ -577,14 +710,55 @@
             "Legislation governing workplaces",
             "Ethics at work"
           ],
-          "expected_response_type": "short_answer"
+          "expected_response_type": "short_answer",
+          "grounding": [
+            {
+              "document": "Module 10-Learner Guide.pdf",
+              "page": 6,
+              "passage": "SECTION 1: KM-10-KT01 : Governance 20% Learning Outcome Topic elements to be covered include: \u2022 KT0101 Definitions and the role of governance \u2022 KT0102 Rules, norms and actions are structured, sustained, regulated and held accountable \u2022 KT0103 Structures and processes and industry codes of practices \u2022 KT0104 Transparent, participatory, inclusive and responsive \u2022 KT0105 Domains of IT governance \u2022 KT0106 Compliance vs non-compliance \u2022 KT0101 Definitions and the role of governance Governance is the process of interactions through the laws, norms, power or language of an organized society over a social system (family, tribe, formal or informal organization, a territory or across territories).",
+              "reason": "Retrieved for KM-10-KT01 (Governance)"
+            },
+            {
+              "document": "Module 10-Learner Guide.pdf",
+              "page": 25,
+              "passage": "Internal Assessment Criteria and Weight \u2022 IAC0201 Legislation governing workplaces is identified and the implications for the workplace are reasoned (Weight 15%)",
+              "reason": "Retrieved for KM-10-KT02 (Legislation governing workplaces)"
+            },
+            {
+              "document": "Module 10-Learner Guide.pdf",
+              "page": 44,
+              "passage": "Easterbrook or the other CEOs who were fired for ethical lapses. However, smaller lapses in ethics occur in workplace s every day. Lapses in workplace ethics do not need to rise to the level of the examples to impact the workplace environment you provide for employees, though. Lapses in workplace ethics can occur because of simple issues such as toilet paper, copy machines, and lunch signup lists.",
+              "reason": "Retrieved for KM-10-KT04 (Ethics at work)"
+            }
+          ],
+          "sub_questions": [
+            {
+              "id": "1",
+              "prompt": "Define governance in this software development context and name two structures or processes that should guide the decision about the audit\u2011log feature.",
+              "marks": 2,
+              "expected_response_type": "short_answer"
+            },
+            {
+              "id": "2",
+              "prompt": "Identify one piece of legislation that governs the handling of organisational data and explain how it affects the proposed shortcut of omitting the audit\u2011log.",
+              "marks": 2,
+              "expected_response_type": "short_answer"
+            },
+            {
+              "id": "3",
+              "prompt": "Briefly describe the ethical issue raised by the team lead's suggestion and state the most appropriate action the junior developer should take.",
+              "marks": 1,
+              "expected_response_type": "short_answer"
+            }
+          ]
         }
       ]
     }
   ],
   "generation_meta": {
-    "provider": "mock",
-    "seed": 1,
-    "blueprint_paper_id": "mock-eisa-software_developer-paper-02"
+    "provider": "groq",
+    "seed": 67890,
+    "blueprint_paper_id": "mock-eisa-software_developer-paper-02",
+    "grounded": true
   }
 }

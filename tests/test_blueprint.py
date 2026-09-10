@@ -49,6 +49,21 @@ def test_every_section_has_a_distinct_occupational_context(real_software_develop
     assert len(contexts) == len(set(contexts)), "two sections share an identical occupational_context"
 
 
+def test_blueprint_nqf_level_comes_from_config_not_reference_analysis_span(real_software_developer_blueprint):
+    # fake_reference_analysis (used to build this fixture) sets
+    # nqf_levels_present=[4, 5] (see tests/conftest.py) - the blueprint must
+    # NOT reflect that raw per-module span; it must use the qualification's
+    # fixed nqf_level from configs/software_developer.json.
+    assert real_software_developer_blueprint.nqf_level == 5
+
+
+def test_build_blueprint_requires_nqf_level_in_config(fake_reference_analysis, fake_qual_config):
+    bad_config = dict(fake_qual_config)
+    del bad_config["nqf_level"]
+    with pytest.raises(ValueError, match="nqf_level"):
+        build_blueprint(fake_reference_analysis, bad_config, paper_number=2)
+
+
 def test_required_outcomes_must_be_subset_of_full_outcomes(fake_reference_analysis, fake_qual_config):
     bad_config = dict(fake_qual_config)
     bad_config["sections"] = [dict(fake_qual_config["sections"][0])]

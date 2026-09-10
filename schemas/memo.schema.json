@@ -56,6 +56,21 @@
           "maxItems": 20,
           "items": {"$ref": "#/definitions/criterion"}
         },
+        "grounding": {
+          "type": "array",
+          "description": "Provenance: real learner-guide passages this answer was generated from - never fabricated (src/validation/answer_grounding_validator.py cross-checks document/page against the ingested corpus). Empty for memos generated without answer retrieval (test mode / API layer - see docs/DESIGN_NOTE.md).",
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "required": ["document", "page", "passage", "reason"],
+            "properties": {
+              "document": {"type": "string", "maxLength": 300},
+              "page": {"type": "integer", "minimum": 1},
+              "passage": {"type": "string", "maxLength": 2000},
+              "reason": {"type": "string", "maxLength": 300}
+            }
+          }
+        },
         "accepted_alternatives": {
           "type": "array",
           "items": {"type": "string", "maxLength": 1000},

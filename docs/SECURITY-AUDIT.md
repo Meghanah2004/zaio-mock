@@ -14,6 +14,30 @@ tested now, but not wired into anything live, because there is nothing live
 to wire it into yet. This distinction is maintained throughout this
 document and must not be blurred in future reporting.
 
+> **POST-AUDIT UPDATE (2026-09-10, not a rewrite of the above - the body
+> below is preserved as the original 2026-09-06 snapshot):** every "PREPARED
+> FOR FUTURE API" item this document describes has since been wired into a
+> live FastAPI service (`api/`) and a React frontend (`frontend/`) - see
+> `docs/API.md` for the current architecture. Real provider calls HAVE since
+> been exercised end-to-end against production Groq traffic (`LLM_PROVIDER=
+> groq`, `GROQ_MODEL=openai/gpt-oss-120b`; `AnthropicProvider` and
+> `GeminiProvider` also exist and are exercised by their own test suites -
+> see `src/providers/`), including hitting and safely handling real
+> adversarial-shaped conditions this document could previously only
+> speculate about: a genuinely malformed real-provider JSON response (fixed
+> in `src/generation/llm_utils.extract_json`, see
+> `tests/test_json_extraction.py`) and a real Groq daily-quota 429 (which
+> exposed a real double-retry bug - fixed by disabling each real provider
+> SDK's own internal retry in favor of this project's single, bounded
+> `call_provider_with_retry` - see `src/providers/groq_provider.py` and
+> `src/providers/anthropic_provider.py`). Section 9's "prompt-injection
+> defense... has never been exercised end-to-end" residual risk is
+> correspondingly narrower now (real provider traffic has flowed through
+> the same delimiter/sanitization path since), though still not a formal
+> red-team exercise against an adversarial prompt-injection attempt
+> specifically - that remains a genuine open item, not resolved by ordinary
+> real-provider usage.
+
 ## 1. Threat model
 
 | Actor | Capability | Motivation |

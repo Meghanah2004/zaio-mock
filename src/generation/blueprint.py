@@ -46,7 +46,7 @@ class Blueprint:
     paper_id: str
     qualification: str
     qualification_title: str
-    nqf_level: list[int]
+    nqf_level: int
     duration_minutes: int
     total_marks: int
     pass_mark_percent: int
@@ -136,8 +136,16 @@ def build_blueprint(reference_analysis: dict[str, Any], qual_config: dict[str, A
             f"section marks sum to {total_marks_check} but total_marks is "
             f"{qual_config['total_marks']}. Fix the config before generating."
         )
+    if "nqf_level" not in qual_config:
+        raise ValueError(
+            f"configs/{qual_config['qualification_key']}.json is missing 'nqf_level' - "
+            f"the fixed qualification NQF level to state on the paper cover, e.g. 5. "
+            f"It must not be derived from reference_analysis['nqf_levels_present'], which is a "
+            f"per-module span (e.g. [4, 5]), not a single assessment level."
+        )
     assumptions = [
         qual_config.get("_assumption_notice", ""),
+        qual_config.get("_nqf_level_notice", ""),
         (
             "Section mark allocation is informed by (not strictly proportional to) each module's "
             "QCTO credit weighting; low-credit but conceptually essential modules (KM-05 "
@@ -168,7 +176,7 @@ def build_blueprint(reference_analysis: dict[str, Any], qual_config: dict[str, A
         paper_id=f"mock-eisa-{qual_config['qualification_key']}-paper-{paper_number:02d}",
         qualification=qual_config["qualification_key"],
         qualification_title=reference_analysis["qualification_title"],
-        nqf_level=reference_analysis["nqf_levels_present"],
+        nqf_level=qual_config["nqf_level"],
         duration_minutes=qual_config["duration_minutes"],
         total_marks=qual_config["total_marks"],
         pass_mark_percent=qual_config["pass_mark_percent"],

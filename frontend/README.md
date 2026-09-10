@@ -29,8 +29,16 @@ allow-list (`CORS_ALLOWED_ORIGINS` in `../.env`) already includes
 Copy `.env.example` to `.env.local` (already gitignored) and set:
 
 ```
-VITE_API_BASE_URL=http://localhost:8000
+VITE_API_BASE_URL=http://127.0.0.1:8000
 ```
+
+Prefer `127.0.0.1` over `localhost`: on a machine where something else is
+already bound to port 8000 (a real, observed situation - see
+`.env.example`'s note), `localhost` can resolve ambiguously and silently
+reach the wrong process. `127.0.0.1` is unambiguous and matches the
+backend's own `--host 127.0.0.1` bind for local development. For a real
+deployment, set this to the deployed backend's actual URL instead - see
+`../docs/DEPLOYMENT.md`.
 
 This is the only environment variable the frontend reads. It is a plain
 URL, not a secret - never put an API key or other credential in a `VITE_`

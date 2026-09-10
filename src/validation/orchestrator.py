@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from src.validation.coverage_validator import validate_coverage
+from src.validation.grounding_validator import validate_grounding
 from src.validation.marks_validator import validate_marks
 from src.validation.novelty_checker import ReferenceCorpusIndex, check_paper_novelty
 from src.validation.schema_validator import validate_memo_schema, validate_paper_schema
@@ -67,5 +68,13 @@ def run_all_validators(
                 f"overall_status={novelty_result['overall_status']} (see validation-report.json for per-question scores)",
             )
         )
+
+        # Independent re-check of learner-guide grounding, from scratch,
+        # against the finished paper JSON + the ingested corpus - never
+        # trusts that question_generator.py's generation-time grounding
+        # check ran or passed (see src/validation/grounding_validator.py).
+        grounding_report = validate_grounding(paper, chunks)
+        for c in grounding_report.checks:
+            report.add(c)
 
     return report, novelty_result

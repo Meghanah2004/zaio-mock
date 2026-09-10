@@ -670,9 +670,32 @@ class MockProvider(LLMProvider):
         section_id = section["id"]
         bank = _SECTION_BANKS[section_id]
         variant = bank[seed % len(bank)]
+        scenario = variant["scenario"]
+
+        # REWORK: when the caller (src/generation/question_generator.py)
+        # supplies retrieved learner-guide evidence - i.e. real generation
+        # mode, see that module's docstring - weave a short, honest
+        # reference to it into the scenario. This is NOT a substitute for a
+        # real model reading and transforming the evidence (MockProvider
+        # remains a fixed, hand-written fixture bank - see the module
+        # docstring above); it exists so the SAME grounding contract
+        # (src/generation/question_generator._grounding_overlap_ok) applies
+        # uniformly to every provider and can be exercised deterministically
+        # in tests without a live API call. When no evidence is supplied
+        # (the existing test-mode call pattern, e.g.
+        # tests/test_mock_provider_content.py), output is byte-identical to
+        # before this rework.
+        evidence = task.get("evidence") or []
+        if evidence:
+            top = evidence[0]
+            reference_clause = (
+                f" (Per {top['document']}, page {top['page']}: {top['passage'][:160]})"
+            )
+            scenario = scenario + reference_clause
+
         return {
             "type": _TYPE_BY_SECTION[section_id],
-            "scenario": variant["scenario"],
+            "scenario": scenario,
             "question": variant["question"],
             "sub_questions": variant["sub_questions"],
             "expected_response_type": (
@@ -691,7 +714,36 @@ class MockProvider(LLMProvider):
         question = task["question"]
         section_id = question["section_id"]
         builder = _MEMO_BUILDERS[section_id]
-        return builder(question)
+        memo = builder(question)
+
+        # REWORK: when the caller (src/generation/memo_generator.py)
+        # supplies retrieved ANSWER evidence - real generation mode, see
+        # that module's docstring - weave a short, honest reference to it
+        # into the model answer(s). Same rationale as the question-side
+        # evidence-weaving fix in _generate_question above: this is not a
+        # substitute for a real model reading and using the evidence
+        # (MockProvider's memo content remains a fixed, hand-written
+        # fixture bank), it exists so the SAME answer-grounding contract
+        # (src.generation.memo_generator._answer_grounding_ok) applies
+        # uniformly to every provider and can be exercised deterministically
+        # in tests without a live API call. Woven into EVERY sub-answer
+        # (not just one), not only the top-level placeholder, so the
+        # injected evidence carries enough relative weight in the overlap
+        # score regardless of how much other sub-answer text surrounds it -
+        # a single injection point was found insufficient for longer,
+        # multi-part memos during testing. When no answer evidence is
+        # supplied (the existing test-mode call pattern, e.g.
+        # tests/test_mock_provider_content.py), output is byte-identical to
+        # before this rework.
+        answer_evidence = task.get("answer_evidence") or []
+        if answer_evidence:
+            top = answer_evidence[0]
+            reference_clause = f" (Per {top['document']}, page {top['page']}: {top['passage'][:160]})"
+            memo["model_answer"] = (memo.get("model_answer") or "") + reference_clause
+            for sub_memo in memo.get("sub_questions", []) or []:
+                sub_memo["model_answer"] = sub_memo.get("model_answer", "") + reference_clause
+
+        return memo
 
     # -- quality review ----------------------------------------------------
     def _quality_review(self, task: dict[str, Any]) -> dict[str, Any]:
@@ -703,6 +755,8 @@ class MockProvider(LLMProvider):
                     {
                         "question_id": q["id"],
                         "occupational_relevance": "pass",
+                        "guide_grounding": "pass" if q.get("grounding") else "not_applicable: no evidence supplied",
+                        "reads_as_copied": "no",
                         "difficulty_appropriate": "pass",
                         "ambiguity": "none_detected",
                         "markability": "pass",

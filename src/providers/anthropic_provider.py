@@ -19,7 +19,7 @@ from __future__ import annotations
 from typing import Any
 
 from src.config import LLMSettings
-from src.providers.base import LLMProvider, LLMProviderError
+from src.providers.base import LLMProvider, LLMProviderError, is_retryable_status
 from src.security.config import SecurityConfig
 from src.security.redaction import redact_secrets
 
@@ -40,7 +40,21 @@ class AnthropicProvider(LLMProvider):
             raise LLMProviderError(
                 "The 'anthropic' package is not installed. Run: pip install anthropic"
             ) from exc
-        self._client = anthropic.Anthropic(api_key=settings.api_key)
+        # max_retries=0: this SDK retries transient errors (incl. 429s)
+        # internally by default (max_retries=2) - src.generation.llm_utils.
+        # call_provider_with_retry already owns retry policy for every
+        # provider (bounded attempts, its own backoff, and - critically -
+        # the one place that decides whether retrying is worth it at all).
+        # Leaving both layers enabled was a real production incident: a
+        # single logical generation call could compound into this SDK's
+        # own 2-3 internal 429 retries (each with its own growing backoff)
+        # UNDERNEATH each of call_provider_with_retry's already-bounded
+        # attempts, turning one confirmed-non-retryable failure (e.g. a
+        # Groq daily token quota, which cannot succeed again until it
+        # resets) into several minutes of doomed retrying before the
+        # eventual failure ever surfaced - see src/providers/groq_provider.py
+        # for the observed real incident this was diagnosed from.
+        self._client = anthropic.Anthropic(api_key=settings.api_key, max_retries=0)
         self._settings = settings
         self._security_config = security_config or SecurityConfig()
 
@@ -72,7 +86,10 @@ class AnthropicProvider(LLMProvider):
             # Defense-in-depth: redact any credential-shaped substring before
             # it can reach a log line or CLI error message, even though no
             # known SDK exception echoes the API key today.
-            raise LLMProviderError(f"Anthropic API call failed: {redact_secrets(str(exc))}") from exc
+            raise LLMProviderError(
+                f"Anthropic API call failed: {redact_secrets(str(exc))}",
+                retryable=is_retryable_status(getattr(exc, "status_code", None)),
+            ) from exc
 
         parts = [block.text for block in response.content if isinstance(block, TextBlock)]
         if not parts:

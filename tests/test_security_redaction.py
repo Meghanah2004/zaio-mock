@@ -30,6 +30,22 @@ def test_redacts_github_token():
     assert "ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" not in redacted
 
 
+def test_redacts_google_gemini_style_key():
+    key = "AIzaSyFAKE0123456789abcdefghijklmnopqrst"[:39]
+    text = f"Gemini API call failed: auth failed for key {key}"
+    redacted = redact_secrets(text)
+    assert key not in redacted
+    assert "[REDACTED]" in redacted
+
+
+def test_redacts_groq_style_key():
+    key = "gsk_" + "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+    text = f"Groq API call failed: auth failed for key {key}"
+    redacted = redact_secrets(text)
+    assert key not in redacted
+    assert "[REDACTED]" in redacted
+
+
 def test_redacts_key_value_style_secrets():
     cases = [
         ("api_key=abcdef1234567890", "abcdef1234567890"),

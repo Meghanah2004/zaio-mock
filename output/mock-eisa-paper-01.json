@@ -1,10 +1,7 @@
 {
   "paper_id": "mock-eisa-software_developer-paper-01",
   "qualification": "Occupational Certificate: Software Developer",
-  "nqf_level": [
-    4,
-    5
-  ],
+  "nqf_level": 5,
   "status_disclaimer": "MOCK / PRACTICE ASSESSMENT ONLY. This paper is generated for formative self-assessment and exam-preparation purposes. It is NOT an official QCTO External Integrated Summative Assessment (EISA), is not moderated by MICT SETA, and confers no qualification status or credit.",
   "duration_minutes": 180,
   "total_marks": 100,
@@ -65,8 +62,8 @@
           "section_id": "A",
           "question_number": "A1",
           "type": "code_analysis",
-          "scenario": "You are a junior developer at Thusong Logistics, a fleet-tracking startup. Before extending the driver dashboard, your lead asks you to work through some numeric and logic checks on paper so the team can confirm your understanding before you touch the codebase.",
-          "question": "Answer each part below, showing your working.",
+          "scenario": "You are a junior developer at DataPulse Solutions, working on a feature that creates a unique identifier for each sensor reading before the data is stored.",
+          "question": "Complete the tasks below to estimate the values needed for the identifier implementation.",
           "marks": 15,
           "difficulty": "foundational",
           "outcomes": [
@@ -83,31 +80,57 @@
             "Mixing types",
             "Programming basics"
           ],
-          "expected_response_type": "worked_calculation",
+          "expected_response_type": "code_explanation",
+          "grounding": [
+            {
+              "document": "Module 4-Learner Guide.pdf",
+              "page": 29,
+              "passage": "The value of 163 in binary is 10100011. How is 200 represented in binary? 200 is the decimal number. The binary form of 200 is 110010002. KT0202 Performing addition and subtraction of positive whole numbers in binary Binary Addition Adding two binary numbers will give us a binary number itself.",
+              "reason": "Retrieved for KM-04-KT02 (Conversion between decimal and binary systems)"
+            },
+            {
+              "document": "Module 4-Learner Guide.pdf",
+              "page": 64,
+              "passage": "Certain operators have higher precedence than others; for example, the multiplication operator has a higher precedence than the addition operator. For example, x = 7 + 3 * 2; here, x is assigned 13, not 20 because operator * has a higher precedence than +, so it first gets multiplied with 3*2 and then adds into 7.",
+              "reason": "Retrieved for KM-04-KT07 (Operator precedence)"
+            },
+            {
+              "document": "Module 4-Learner Guide.pdf",
+              "page": 74,
+              "passage": "It\u2019s the other part of the answer for integer division. It\u2019s the remainder. Remember in grade school you would say, \u201cEleven divided by four is two remainder three.\u201d In many programming languages, the symbol for the modulus operator is the percent sign (%). KT0902 Purpose and use The modulus operator is useful in a variety of circumstances.",
+              "reason": "Retrieved for KM-04-KT09 (Modulus)"
+            },
+            {
+              "document": "Module 4-Learner Guide.pdf",
+              "page": 81,
+              "passage": "SECTION 11: KM-04-KT11 : Mixing types 10% Learning Outcome Topic elements to be covered include: \u2022 KT1101 Definition and terminology \u2022 KT1102 Purpose and use \u2022 KT1103 Apply an operator \u2022 KT1104 Combination with the order of operations \u2022 KT1105 The order in which an expression is written \u2022 KT1106 How a computer would evaluate some expressions that combine types KT1101 Definition and terminology In mathematics, mixing is an abstract concept originating from physics: the attempt to describe the irreversible thermodynamic process of mixing in the everyday world: mixing paint, mixing drinks, industrial mixing, etc.",
+              "reason": "Retrieved for KM-04-KT11 (Mixing types)"
+            }
+          ],
           "sub_questions": [
             {
               "id": "1",
-              "prompt": "A vehicle's onboard unit reports an odometer delta as the binary value 10110. Working from the rightmost digit, determine its decimal equivalent and show the contribution of each bit position.",
+              "prompt": "a) Convert the decimal value 200 to its binary representation.",
               "marks": 3,
-              "expected_response_type": "worked_calculation"
+              "expected_response_type": "short_answer"
             },
             {
               "id": "2",
-              "prompt": "A teammate hard-codes a trip-cost estimate as `distance = 23 % 4 * 2 - 5 + 1`. Work out the value `distance` ends up with. For each step, state which single operation you resolved and why it had to happen at that point relative to the others.",
+              "prompt": "b) Using the binary value from part (a) as an integer named `reading`, evaluate the expression `int channel = (reading * 3 + 5) % 4;`. Show the order in which operators are applied and calculate the final value of `channel`.",
               "marks": 4,
-              "expected_response_type": "worked_calculation"
+              "expected_response_type": "calculation_explanation"
             },
             {
               "id": "3",
-              "prompt": "A colleague asks you to review their pull request without running it. Step through the following block one line at a time and record every value it prints, in the order it prints them:\n```\nspeed = 50\nchecks = 0\nwhile checks < 4:\n    if speed > 60:\n        print(\"over limit\")\n    speed = speed + 5\n    checks = checks + 1\n```",
+              "prompt": "c) The next line mixes a floating\u2011point value with an integer: `double factor = 2.5; int result = reading / factor;`. Explain how the mixed types are handled in the calculation and determine the value stored in `result` (assume the language truncates toward zero).",
               "marks": 4,
-              "expected_response_type": "trace_table_or_output_list"
+              "expected_response_type": "calculation_explanation"
             },
             {
               "id": "4",
-              "prompt": "In Python, a colleague wrote this line to log a trip summary:\n`log = \"Trip length: \" + 12.3 + \" km\"`\nRunning it raises `TypeError: can only concatenate str (not \"float\") to str`. Explain precisely why Python raises this error here, and rewrite the line so it runs successfully and produces the string `\"Trip length: 12.3 km\"`.",
+              "prompt": "d) Write a brief pseudo\u2011code fragment that combines the steps above to generate a sensor identifier string in the format `BIN-{binary}-{channel}-{result}`. Ensure the code respects operator precedence and appropriate type conversions.",
               "marks": 4,
-              "expected_response_type": "explanation_and_corrected_code"
+              "expected_response_type": "pseudo_code"
             }
           ]
         }
@@ -149,8 +172,8 @@
           "section_id": "B",
           "question_number": "B1",
           "type": "scenario_extended",
-          "scenario": "A small independent bookshop, Paper Trail Books, wants a simple 'Reading Club Sign-Up' feature added to their existing website so visitors can register interest without an account. You have been asked to build the front end for this feature.",
-          "question": "Complete the following front-end development tasks for the Reading Club Sign-Up feature.",
+          "scenario": "BrightWave Solutions is creating an interactive product carousel for a client\u2019s e\u2011commerce homepage. The carousel must be built with HTML5 markup, styled with CSS (including a fade animation), and controlled by a reusable JavaScript class that follows object\u2011oriented principles. The front\u2011end code will be deployed separately from the back\u2011end API that supplies product data.",
+          "question": "Develop the front\u2011end portion of the carousel feature as described, and explain the benefits of front\u2011end/back\u2011end separation.",
           "marks": 30,
           "difficulty": "intermediate",
           "outcomes": [
@@ -165,31 +188,57 @@
             "CSS",
             "JavaScript"
           ],
-          "expected_response_type": "html_code_and_short_explanation",
+          "expected_response_type": "mixed",
+          "grounding": [
+            {
+              "document": "Module 6-Learner Guide.pdf",
+              "page": 16,
+              "passage": "Each distinct logic sequence is known as a method. Objects can communicate with well-defined interfaces called messages. What is the structure of object-oriented programming? The structure, or building blocks, of object-oriented programming include the following: \uf0b7 Classes are user-defined data types that act as the blueprint for individual objects, attributes and methods.",
+              "reason": "Retrieved for KM-06-KT02 (Object-Oriented Programming)"
+            },
+            {
+              "document": "Module 6-Learner Guide.pdf",
+              "page": 64,
+              "passage": "Crestron HTML5 User Interface allows for the separation of front-end and back-end development to provide flexibility for dealers and integrators. \uf0b7 Changes on the front-end or back-end can be deployed independently. \uf0b7 User interfaces can be designed and tested using control system emulation.",
+              "reason": "Retrieved for KM-06-KT06 (HTML5)"
+            },
+            {
+              "document": "Module 6-Learner Guide.pdf",
+              "page": 86,
+              "passage": "Because these two times are so important, they have special aliases: from and to. Both are optional. If from/0% or to/100% is not specified, the browser starts or finishes the animation using the computed values of all attributes. Internal Assessment Criteria and Weight \u2022 IAC0701 Explain how to use CSS to apply basic styling to a web page \u2022 IAC0702 Explain how to use CSS to style the layout, text, and background of a web page (Weight 15%)",
+              "reason": "Retrieved for KM-06-KT07 (CSS)"
+            },
+            {
+              "document": "Module 6-Learner Guide.pdf",
+              "page": 89,
+              "passage": "\uf0b7 Richer interfaces \u2212 You can use JavaScript to include such it ems as drag-and-drop components and sliders to give a Rich Interface to your site visitors. Limitations of JavaScript We cannot treat JavaScript as a full -fledged programming language. It lacks the following important features \u2212 \uf0b7 Client-side JavaScript does not allow the reading or writing of files.",
+              "reason": "Retrieved for KM-06-KT08 (JavaScript)"
+            }
+          ],
           "sub_questions": [
             {
               "id": "1",
-              "prompt": "Write a semantic HTML5 form that captures: full name (required), email address (required, must be a valid email format), and favourite genres as checkboxes for 'Fiction', 'Non-Fiction' and 'Poetry' - the form's requirement is that at least one genre MUST be selected before the form can be submitted. Use appropriate input types and attributes so the browser natively validates the name and email fields without any JavaScript. Then, in 1-2 sentences, state whether HTML5's `required` attribute can, by itself, enforce this at-least-one-checkbox requirement, and explain what you would need to add to actually enforce it.",
-              "marks": 6,
-              "expected_response_type": "html_code_and_short_explanation"
+              "prompt": "Provide the HTML5 markup for a carousel component that includes a container div with id 'product-carousel' and three slide items each with class 'slide' containing a placeholder image element.",
+              "marks": 5,
+              "expected_response_type": "html_code"
             },
             {
               "id": "2",
-              "prompt": "Using CSS Flexbox, style the form so that on small screens each label appears above its input (stacked, single column), and on screens 768px and wider the labels appear beside their inputs in a single row per field. Include the media query and explain in one sentence why Flexbox is a suitable choice here.",
-              "marks": 6,
-              "expected_response_type": "css_code_and_short_explanation"
+              "prompt": "Write the CSS to style the carousel: set the container to position relative, slides to be absolutely positioned, hide all slides except the first, and create a fade\u2011in animation for slides using @keyframes with from {opacity:0;} to {opacity:1;}. Apply the animation to slides when a class 'active' is added. Include any necessary selectors.",
+              "marks": 10,
+              "expected_response_type": "css_code"
             },
             {
               "id": "3",
-              "prompt": "Write JavaScript that intercepts the form's submit event, prevents the default page reload, checks that the name field is not empty and the email field contains an '@' and at least one '.' after it, and - if invalid - displays an inline error message next to the field without using `alert()`. If valid, log the form data to the console.",
-              "marks": 8,
+              "prompt": "Implement a JavaScript ES6 class named Carousel. The class should have a constructor that accepts the container element id, stores a reference to the slides, and initializes a current index. Provide methods next() and previous() that update the current slide, add/remove the 'active' class, and dispatch a custom event 'slideChanged' with the new index as detail. Show how an instance would be created and how the next method is called.",
+              "marks": 10,
               "expected_response_type": "javascript_code"
             },
             {
               "id": "4",
-              "prompt": "You are given this object literal used to track a reading-club member:\n```javascript\nlet member = { name: \"Sipho\", booksRead: 2 };\n```\nRefactor this into an ES6 class named `Member` with a constructor, a private or underscore-convention field for `booksRead`, a getter for `booksRead`, and a setter that rejects negative values. Name the specific OOP principle your getter/setter design demonstrates and explain, in 1-2 sentences, why it matters here.",
-              "marks": 10,
-              "expected_response_type": "javascript_code_and_short_explanation"
+              "prompt": "Explain, in 2\u20113 sentences, how separating the front\u2011end (HTML/CSS/JS) from the back\u2011end (e.g., API services) enables independent deployment of changes to the carousel feature.",
+              "marks": 5,
+              "expected_response_type": "short_answer"
             }
           ]
         }
@@ -243,8 +292,8 @@
           "section_id": "C",
           "question_number": "C1",
           "type": "design_task",
-          "scenario": "A small clinic wants to introduce a simple appointment booking feature: a Patient may book an Appointment with a Doctor; if the requested slot is full, the request joins a waitlist and the Patient is notified when a slot opens up.",
-          "question": "Model the following aspects of the booking feature using UML.",
+          "scenario": "TechNova Solutions is developing an online library reservation system. The junior developer must produce UML artefacts to document the static structure of the reservation domain and the dynamic interaction when a member reserves a book.",
+          "question": "Create the required UML diagrams to capture the design of the reservation feature as described.",
           "marks": 15,
           "difficulty": "intermediate",
           "outcomes": [
@@ -255,19 +304,45 @@
             "Classes and class diagrams",
             "Sequence diagrams"
           ],
-          "expected_response_type": "structured_uml_description",
+          "expected_response_type": "uml_design",
+          "grounding": [
+            {
+              "document": "Module 7-Learner Guide.pdf",
+              "page": 73,
+              "passage": "SECTION 4: KM-07-KT04: Classes and class diagrams 5% Learning Outcome Topic elements to be covered include: \u2022 KT0401 Definition of class \u2022 KT0402 Classes in UML \u2022 KT0403 Visibility \u2022 KT0404 Class state: attributes \u2022 KT0405 Class behaviours: operations \u2022 KT0406 Static parts of a class \u2022 KT0401 Definition of class Class diagram is a static diagram.",
+              "reason": "Retrieved for KM-07-KT04 (Classes and class diagrams)"
+            },
+            {
+              "document": "Module 7-Learner Guide.pdf",
+              "page": 74,
+              "passage": "Purpose of Class Diagrams The purpose of class diagram is to model the static view of an application. Class diagrams are the only diagrams which c an be directly mapped with object -oriented languages and thus widely used at the time of construction. UML diagrams like activity diagram, sequence diagram can only give the sequence flow of the application, however class diagram is a bit different.",
+              "reason": "Retrieved for KM-07-KT04 (Classes and class diagrams)"
+            },
+            {
+              "document": "Module 7-Learner Guide.pdf",
+              "page": 114,
+              "passage": "What is a sequence diagram in UML and what is its purpose?",
+              "reason": "Retrieved for KM-07-KT07 (Sequence diagrams)"
+            },
+            {
+              "document": "Module 7-Learner Guide.pdf",
+              "page": 117,
+              "passage": "Sequence Diagrams are time focus and they s how the order of the interaction visually by using the vertical axis of the diagram to represent time what messages are sent and when. Sequence Diagrams captures: \uf0b7 the interaction that takes place in a collaboration that either realizes a use case or an operation (instance diagrams or generic diagrams)",
+              "reason": "Retrieved for KM-07-KT07 (Sequence diagrams)"
+            }
+          ],
           "sub_questions": [
             {
               "id": "1",
-              "prompt": "Describe a class diagram for this feature. For each of `Patient`, `Doctor`, and `Appointment`, list at least 3 relevant attributes and 2 relevant methods, and describe the association(s) between the classes including multiplicity (e.g. one-to-many). You may describe this in structured text/UML notation; a hand-drawn diagram is not required.",
-              "marks": 8,
-              "expected_response_type": "structured_uml_description"
+              "prompt": "Identify the essential classes for the reservation feature, specifying appropriate visibility for each attribute and operation, and indicate any static members. Present this information in a textual class diagram description that could be directly translated into a UML class diagram.",
+              "marks": 7,
+              "expected_response_type": "class_diagram"
             },
             {
               "id": "2",
-              "prompt": "Describe, as a sequence of numbered messages between objects (as you would read off a sequence diagram), the flow when a Patient requests an Appointment slot that is full: include at least the Patient, a BookingService, the Doctor's schedule, and a notification step once a slot opens up.",
-              "marks": 7,
-              "expected_response_type": "structured_uml_description"
+              "prompt": "Using the classes defined in part 1, draft a sequence diagram that shows the interaction flow when a member reserves a book, including lifelines, message order, activation bars and return messages where relevant. Provide the diagram description in a format that can be rendered by a UML tool.",
+              "marks": 8,
+              "expected_response_type": "sequence_diagram"
             }
           ]
         }
@@ -301,9 +376,9 @@
           "id": "Q-D1",
           "section_id": "D",
           "question_number": "D1",
-          "type": "scenario_short_answer",
-          "scenario": "Thusong Logistics (from Section A) needs a small relational database to track vehicles and the maintenance depots that service them, so staff can quickly see which vehicles are due for a service.",
-          "question": "Complete the following database tasks.",
+          "type": "code_writing",
+          "scenario": "Acme Retail Ltd is developing a new web\u2011based inventory management system. As a junior developer you are tasked with designing the relational database that will store product and category information, ensure data integrity, and support routine maintenance.",
+          "question": "Complete the following tasks to design, implement and maintain the relational database for Acme Retail's inventory system.",
           "marks": 20,
           "difficulty": "intermediate",
           "outcomes": [
@@ -320,29 +395,61 @@
             "Understanding Data",
             "Administering a database"
           ],
-          "expected_response_type": "sql_code",
+          "expected_response_type": "short_answer",
+          "grounding": [
+            {
+              "document": "Module 8-Learner Guide.pdf",
+              "page": 12,
+              "passage": "The relational database model was designed to solve the problem of multiple arbitrary data structures. The relational data model provide d a standard way of representing and querying data that could be used by any application. From the beginning, developers recognized that the chief strength of the relational database model was in its use of tables, which were an intuitive, efficient, and f lexible way to store and access structured information.",
+              "reason": "Retrieved for KM-08-KT01 (Understanding core database concepts)"
+            },
+            {
+              "document": "Module 8-Learner Guide.pdf",
+              "page": 36,
+              "passage": "Internal Assessment Criteria and Weight \u2022 IAC0201 An understandi ng of the principles and practices for creating database is demonstrated (Weight 10%)",
+              "reason": "Retrieved for KM-08-KT02 (Creating database)"
+            },
+            {
+              "document": "Module 8-Learner Guide.pdf",
+              "page": 93,
+              "passage": "You can, however, use the ON DELETE CASCADE option to cause deletes from a parent table to trip deletes on child tables. See The ON DELETE CASCADE option. Internal Assessment Criteria and Weight \u2022 IAC0301 An understanding of the principles and practices for manipulating data is demonstrated (Weight 25%)",
+              "reason": "Retrieved for KM-08-KT03 (Manipulating data)"
+            },
+            {
+              "document": "Module 8-Learner Guide.pdf",
+              "page": 95,
+              "passage": "\uf0b7 Understanding the first normal form \uf0b7 Understanding the second normal form Understanding the third normal form \uf0b7 Understanding the fourth normal form Understanding the fifth normal form Normalization is the process of organizing data in a database . This includes creating tables and establishing relationships between those tables according to rules designed both to protect the data and to make the database more flexible by eliminating redundancy and inconsistent dependency.",
+              "reason": "Retrieved for KM-08-KT04 (Understanding Data)"
+            }
+          ],
           "sub_questions": [
             {
               "id": "1",
-              "prompt": "Write CREATE TABLE statements for `Depots` (depot_id, name, contact_email) and `Vehicles` (vehicle_id, registration, km_since_service, service_interval_km, depot_id). Choose appropriate data types and define the primary key on each table and the foreign key relationship between them.",
-              "marks": 6,
-              "expected_response_type": "sql_code"
+              "prompt": "Explain why a relational database is an appropriate choice for storing product and category information in this system, focusing on the use of tables and structured data.",
+              "marks": 4,
+              "expected_response_type": "short_answer"
             },
             {
               "id": "2",
-              "prompt": "Write a single SQL query that lists the vehicle registration, km_since_service, and depot contact email for every vehicle where km_since_service is greater than its service_interval_km, ordered by km_since_service descending.",
-              "marks": 6,
+              "prompt": "Write the SQL DDL statements to create the tables **Categories** and **Products**. Include primary keys, a foreign key from Products to Categories, and ensure that deleting a category automatically deletes its related products using ON DELETE CASCADE.",
+              "marks": 4,
               "expected_response_type": "sql_code"
             },
             {
               "id": "3",
-              "prompt": "Write an SQL statement that resets km_since_service to 0 for every vehicle serviced by depot_id = 2. Then, in 1-2 sentences, explain why omitting the WHERE clause on an UPDATE statement like this is dangerous.",
+              "prompt": "Insert a new product record into the **Products** table (choose any values). Then write a DELETE statement that removes a specific category. Describe the effect of the DELETE on the related product rows.",
               "marks": 4,
-              "expected_response_type": "sql_code_and_short_explanation"
+              "expected_response_type": "sql_code"
             },
             {
               "id": "4",
-              "prompt": "Two dispatchers open the same vehicle record at the same time and both save changes. Describe one practical technique a database or application can use to prevent one person's update from silently overwriting the other's.",
+              "prompt": "A preliminary design stores order information in a single table that includes product name, category name, and customer details, leading to redundancy. Identify two normalization problems in this design and outline how you would restructure the data to achieve at least Third Normal Form (3NF).",
+              "marks": 4,
+              "expected_response_type": "short_answer"
+            },
+            {
+              "id": "5",
+              "prompt": "List two routine administrative tasks a junior DBA should perform each week on this database and briefly explain why each task is important.",
               "marks": 4,
               "expected_response_type": "short_answer"
             }
@@ -407,8 +514,8 @@
           "section_id": "E",
           "question_number": "E1",
           "type": "scenario_extended",
-          "scenario": "Your team is midway through building a new appointment-reminder feature. The team lead shares a short project update and asks you to reflect on process and security.",
-          "question": "Answer the following questions about SDLC, algorithms, and secure coding.",
+          "scenario": "TechNova Solutions is developing a new Secure Payment API that will process online transactions and must meet strict security and reliability requirements.",
+          "question": "As a junior developer assigned to this feature, answer the following tasks:",
           "marks": 15,
           "difficulty": "advanced",
           "outcomes": [
@@ -424,24 +531,56 @@
             "Security topics every software developer must"
           ],
           "expected_response_type": "short_answer",
+          "grounding": [
+            {
+              "document": "Module 9-Learner Guide.pdf",
+              "page": 25,
+              "passage": "In this blog, we\u2019ll take a look at the evolution of the software development life cycle and consider several current trends, including the integration of application security into the development process. The ideas about the software development life cycle (SDLC) have been around for a long time and many variations exist, such as the waterfall, and the V-model.",
+              "reason": "Retrieved for KM-09-KT02 (Software Development Life Cycle)"
+            },
+            {
+              "document": "Module 9-Learner Guide.pdf",
+              "page": 107,
+              "passage": "The testing phase of the software development lifecycle (SDLC) is where you focus on investigation and discovery. During the testing phase, developers find out whether their code and programming work according to customer requirements. And while it's not possible to solve all the failures you might find during the testing phase; it is possible to use the results from this phase to reduce the number of errors within the software program.",
+              "reason": "Retrieved for KM-09-KT09 (Phase 5: Testing)"
+            },
+            {
+              "document": "Module 9-Learner Guide.pdf",
+              "page": 195,
+              "passage": "SECTION 16: KM-09-KT16: Algorithms 5% Learning Outcome Topic elements to be covered include: \u2022 KT1601 Best languages to write algorithms \u2022 KT1602 Types \u2022 KT1603 Where to use algorithms \u2022 KT1604 Writing algorithms: \u2022 Problem definition \u2022 Data collection and processing \u2022 Logical approach \u2022 Develop a high-level algorithm \u2022 Refine by adding more data \u2022 Number of builds \u2022 Solution \u2022 KT1605 Algorithms and data structures \u2022 KT1606 Algorithms and problem solving \u2022 KT1607 Algorithms and cryptography \u2022 KT1608 Mathematical formulas in texts \u2022 KT1609 Tools for representing algorithms \u2022 KT1601 Best languages to write algorithms",
+              "reason": "Retrieved for KM-09-KT16 (Algorithms)"
+            },
+            {
+              "document": "Module 9-Learner Guide.pdf",
+              "page": 242,
+              "passage": "Secure software is the result of security aware software development processes where security is built in and thus software is developed with security in mind.",
+              "reason": "Retrieved for KM-09-KT18 (Security topics every software developer must)"
+            }
+          ],
           "sub_questions": [
             {
               "id": "1",
-              "prompt": "The update reads: 'We've mapped out every screen and written down exactly what data each one needs before anyone starts coding.' Identify which SDLC phase this describes and justify your answer in 1-2 sentences.",
+              "prompt": "Select an appropriate software development life\u2011cycle (SDLC) model for the Secure Payment API and justify your choice, specifically addressing how the model supports the integration of security activities.",
               "marks": 4,
               "expected_response_type": "short_answer"
             },
             {
               "id": "2",
-              "prompt": "Write pseudocode for an algorithm that finds any duplicate phone number in a list of patient phone numbers and returns the first duplicate found (or a clear 'none found' result). State the time complexity of your algorithm using Big-O notation and justify it in one sentence.",
-              "marks": 6,
-              "expected_response_type": "pseudocode_and_complexity"
+              "prompt": "Write a high\u2011level algorithm (in clear pseudocode) that validates a payment request. Include steps for data collection, processing, and a cryptographic verification (e.g., signature check).",
+              "marks": 5,
+              "expected_response_type": "short_answer"
             },
             {
               "id": "3",
-              "prompt": "A colleague wrote this code to look up a patient by surname:\n```python\nquery = \"SELECT * FROM patients WHERE surname = '\" + user_input + \"'\"\n```\nIdentify the security vulnerability in this code and rewrite it using a safe approach (e.g. parameterised query), explaining briefly why your version is safe.",
-              "marks": 5,
-              "expected_response_type": "vulnerability_identification_and_corrected_code"
+              "prompt": "Identify two testing activities that should be performed during the testing phase for this API and explain how each activity helps reduce the number of errors in the final product.",
+              "marks": 4,
+              "expected_response_type": "short_answer"
+            },
+            {
+              "id": "4",
+              "prompt": "Recommend one coding practice that will help maintain security and traceability of the API code (for example, a commenting or logging approach) and briefly describe its benefit.",
+              "marks": 2,
+              "expected_response_type": "short_answer"
             }
           ]
         }
@@ -563,8 +702,8 @@
           "section_id": "F",
           "question_number": "F1",
           "type": "scenario_short_answer",
-          "scenario": "A teammate says: 'We're behind schedule - let's skip logging what changed in this release so we can ship faster. No one reads those notes anyway.'",
-          "question": "Identify one workplace governance or professional-practice principle relevant to this situation, and explain in a short paragraph what you should do, and why.",
+          "scenario": "TechNova Solutions is building an internal employee portal. While reviewing the code repository, a junior developer discovers that a senior team member has copied several source\u2011code files onto a personal USB drive to continue work from home, without documented approval. The junior developer must decide how to act.",
+          "question": "In the context of the situation described, answer the following:",
           "marks": 5,
           "difficulty": "foundational",
           "outcomes": [
@@ -577,14 +716,55 @@
             "Legislation governing workplaces",
             "Ethics at work"
           ],
-          "expected_response_type": "short_answer"
+          "expected_response_type": "short_answer",
+          "grounding": [
+            {
+              "document": "Module 10-Learner Guide.pdf",
+              "page": 6,
+              "passage": "SECTION 1: KM-10-KT01 : Governance 20% Learning Outcome Topic elements to be covered include: \u2022 KT0101 Definitions and the role of governance \u2022 KT0102 Rules, norms and actions are structured, sustained, regulated and held accountable \u2022 KT0103 Structures and processes and industry codes of practices \u2022 KT0104 Transparent, participatory, inclusive and responsive \u2022 KT0105 Domains of IT governance \u2022 KT0106 Compliance vs non-compliance \u2022 KT0101 Definitions and the role of governance Governance is the process of interactions through the laws, norms, power or language of an organized society over a social system (family, tribe, formal or informal organization, a territory or across territories).",
+              "reason": "Retrieved for KM-10-KT01 (Governance)"
+            },
+            {
+              "document": "Module 10-Learner Guide.pdf",
+              "page": 25,
+              "passage": "Internal Assessment Criteria and Weight \u2022 IAC0201 Legislation governing workplaces is identified and the implications for the workplace are reasoned (Weight 15%)",
+              "reason": "Retrieved for KM-10-KT02 (Legislation governing workplaces)"
+            },
+            {
+              "document": "Module 10-Learner Guide.pdf",
+              "page": 44,
+              "passage": "Easterbrook or the other CEOs who were fired for ethical lapses. However, smaller lapses in ethics occur in workplace s every day. Lapses in workplace ethics do not need to rise to the level of the examples to impact the workplace environment you provide for employees, though. Lapses in workplace ethics can occur because of simple issues such as toilet paper, copy machines, and lunch signup lists.",
+              "reason": "Retrieved for KM-10-KT04 (Ethics at work)"
+            }
+          ],
+          "sub_questions": [
+            {
+              "id": "1",
+              "prompt": "Identify two governance structures or processes within TechNova that should guide the junior developer\u2019s response.",
+              "marks": 2,
+              "expected_response_type": "short_answer"
+            },
+            {
+              "id": "2",
+              "prompt": "Name one piece of legislation that governs workplace data handling in South Africa and explain one implication of that legislation for the junior developer\u2019s decision.",
+              "marks": 2,
+              "expected_response_type": "short_answer"
+            },
+            {
+              "id": "3",
+              "prompt": "Briefly describe the ethical issue involved and recommend the most appropriate first step the junior developer should take.",
+              "marks": 1,
+              "expected_response_type": "short_answer"
+            }
+          ]
         }
       ]
     }
   ],
   "generation_meta": {
-    "provider": "mock",
-    "seed": 9,
-    "blueprint_paper_id": "mock-eisa-software_developer-paper-01"
+    "provider": "groq",
+    "seed": 12345,
+    "blueprint_paper_id": "mock-eisa-software_developer-paper-01",
+    "grounded": true
   }
 }

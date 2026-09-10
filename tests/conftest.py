@@ -4,10 +4,74 @@ Fixtures build a small SYNTHETIC reference-analysis + qualification config
 so generation/validation tests do not depend on parsing the real sdev/
 corpus (faster, isolated, and unaffected by future changes to the real
 reference material).
+
+TEST-ENVIRONMENT ISOLATION (pytest_configure below): a developer's local
+``.env`` is EXACTLY as real when pytest imports src.config as it is when
+``python -m src.cli generate`` does - src.config.LLMSettings resolves
+provider/model/api_key from os.environ, populated from .env by
+src.config._load_dotenv_if_present() (which only sets a var if it is not
+ALREADY present in os.environ). api/service.py's endpoint tests build a
+provider from those live settings with NO mocking, by design - they
+exercise the exact same real code path the CLI uses. With a real
+LLM_PROVIDER=groq and a real GROQ_API_KEY configured for actual generation
+work, a bare ``pytest -q`` therefore constructed a REAL GroqProvider and
+attempted a REAL network call - observed directly as a >120s hang. See
+tests/test_environment_isolation.py for the regression test.
 """
 from __future__ import annotations
 
+import os
+
 import pytest
+
+_REAL_PROVIDER_API_KEY_ENV_VARS = ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "GROQ_API_KEY")
+
+
+def force_offline_test_environment() -> None:
+    """Force LLM_PROVIDER=mock and blank every real provider's API key in
+    os.environ, so nothing in this process can ever resolve to a real,
+    network-capable provider - no matter what the developer's local .env
+    contains. Exported (not a private/underscore name) specifically so
+    tests/test_environment_isolation.py can call it directly to verify its
+    effect, rather than re-implementing the same logic to check it.
+
+    Every touched variable is SET to a value (LLM_PROVIDER to "mock", each
+    API key to ""), never deleted/popped-to-absent. This matters and was
+    caught by a failing regression test during development: src.config's
+    module-level ``_load_dotenv_if_present()`` only loads a var FROM .env
+    when it is not ALREADY present in os.environ. This hook runs from
+    pytest_configure, before any test module - and so before src.config -
+    is ever imported; if a variable were left ABSENT here instead of being
+    set to an explicit value, src.config's lazy .env loader would see "not
+    present yet" the first time something later imports it (e.g. during
+    test collection) and dutifully fill it back in from the real .env,
+    silently undoing this function for that one variable. Setting an
+    explicit (blank) value up front is what makes the "already present"
+    check correctly block that later load, regardless of import order.
+
+    Does NOT touch the real .env file, and does not run outside a pytest
+    process - src/cli.py never imports or calls this, so a real
+    ``python -m src.cli generate`` run's provider selection is completely
+    unaffected (see tests/test_environment_isolation.py for the check that
+    src/cli.py itself has no reference to it).
+
+    Individual provider tests (tests/test_anthropic_provider.py,
+    tests/test_gemini_provider.py, tests/test_groq_provider.py) are
+    unaffected by this: they construct LLMSettings with an explicit fake
+    api_key argument, which always overrides whatever default_factory
+    would otherwise read from the environment.
+    """
+    os.environ["LLM_PROVIDER"] = "mock"
+    for env_var in _REAL_PROVIDER_API_KEY_ENV_VARS:
+        os.environ[env_var] = ""
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    """Runs once, before test collection - and therefore before any test
+    module, including src.config, is ever imported (see
+    force_offline_test_environment's docstring for why that ordering is
+    what makes this effective)."""
+    force_offline_test_environment()
 
 
 @pytest.fixture(autouse=True)
@@ -26,6 +90,76 @@ def _reset_api_rate_limits():
     yield
     RATE_LIMITER.generation.reset("testclient")
     RATE_LIMITER.read.reset("testclient")
+
+
+@pytest.fixture(scope="module", autouse=True)
+def _isolate_generation_history(tmp_path_factory):
+    """api/service.py's generate_paper_and_memo now performs real
+    cross-paper novelty checking against artifacts/generation-history.json
+    - the SAME file a real ``python -m src.cli generate`` run writes to
+    (this is the real fix for "the API must invoke the actual grounded
+    pipeline," not a test-only concern - see that function's REWORK
+    docstring). Without isolation here, one api/test_api_*.py test's
+    MockProvider-generated fixture content would pollute another test's
+    novelty check (MockProvider only has 2 content variants per section,
+    so two tests whose seeds land on the same variant would legitimately
+    collide and fail), AND every test run would permanently pollute the
+    real project's generation history with throwaway fixture content.
+
+    MODULE-scoped (not function-scoped) and NOT built on the built-in
+    ``monkeypatch`` fixture, for a subtle but important reason: pytest sets
+    up higher-scoped fixtures before lower-scoped ones for the first test
+    in a scope, and ``monkeypatch`` is itself function-scoped only (pytest
+    raises a ScopeMismatch if a module-scoped fixture requests it). A
+    test_api_results.py-style module with its own ``scope="module"``
+    autouse seeding fixture (e.g. one real `generate()` call reused by
+    every test in that module) would otherwise run its one-time setup
+    BEFORE a function-scoped isolation fixture ever activated - which is
+    exactly how this fixture, in an earlier function-scoped form, once let
+    a test-only paper leak into and permanently pollute the real project's
+    artifacts/generation-history.json. Redirects api.service's module-level
+    history path to a fresh per-TEST-MODULE temp file (shared by every test
+    within that one module, isolated from every other module) for the
+    duration of that module - a no-op for every module that never imports
+    api.service, which is every non-API test module. Restores the original
+    path afterwards so this process's own module-level state never leaks
+    across unrelated test modules either."""
+    import api.service as service_module
+
+    original_path = service_module._GENERATION_HISTORY_PATH
+    service_module._GENERATION_HISTORY_PATH = tmp_path_factory.mktemp("generation_history") / "generation-history.json"
+    yield
+    service_module._GENERATION_HISTORY_PATH = original_path
+
+
+@pytest.fixture(autouse=True)
+def _reset_generation_history_between_tests():
+    """Deletes the (already-isolated, never the real - see
+    _isolate_generation_history above) history file before every single
+    test function, so each test's own real generation always starts from
+    an empty cross-paper history - src.validation.cross_paper_novelty.
+    load_history treats a missing file as ``{}``, exactly like a brand new
+    project.
+
+    This matters even WITH per-module isolation above: a module can share
+    one isolated file across many test functions (test_api_results.py's
+    module-scoped ``_seed_one_result`` seeds one paper that every test in
+    that module reuses), and MockProvider's real fixture content is
+    deliberately narrow - exactly 2 hand-written variants per section (see
+    src/providers/mock_provider.py) - close enough in wording to each other
+    (same numeric/logic structure, only cosmetic scenario details differ)
+    that two DIFFERENT real generations landing in the SAME history file
+    can legitimately exceed the real, non-negotiable 0.6 cross-paper
+    novelty threshold against EACH OTHER, not just against themselves. That
+    is a MockProvider content-bank limitation (see its module docstring,
+    "genuine new scenario variety requires... switching to a real
+    provider"), not a defect in the novelty check, which must stay strict.
+    Resetting between tests removes that accidental cross-test coupling
+    without touching the threshold or the real project history file."""
+    import api.service as service_module
+
+    service_module._GENERATION_HISTORY_PATH.unlink(missing_ok=True)
+    yield
 
 
 @pytest.fixture
@@ -116,6 +250,7 @@ def fake_qual_config() -> dict:
         "qualification_key": "test_qual",
         "_assumption_notice": "test fixture - not a real assumption notice",
         "paper_title": "Test Paper",
+        "nqf_level": 5,
         "duration_minutes": 60,
         "total_marks": 45,
         "pass_mark_percent": 50,

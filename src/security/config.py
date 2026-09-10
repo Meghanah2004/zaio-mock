@@ -49,6 +49,73 @@ class SecurityConfig:
     """Cap applied to any single piece of reference-derived text (e.g. a
     Knowledge Topic title) before it can be interpolated into an LLM
     prompt - see src/analysis/reference_analyzer.py."""
+    max_evidence_passage_chars: int = 900
+    """Cap applied to a single retrieved learner-guide passage
+    (src/retrieval/evidence_selector.py) before it is interpolated into
+    prompts/generate_questions.txt's GUIDE_EVIDENCE block. Wider than
+    max_reference_derived_text_length (which bounds short KT titles) because
+    a real passage needs enough content for the model to ground a question
+    in, but still bounded - never the full page, never unbounded."""
+    evidence_passages_per_section: int = 4
+    """How many retrieved passages are handed to the LLM per blueprint
+    section. Small on purpose - see docs/DESIGN.md prompt-size discipline."""
+    grounding_min_overlap: float = 0.08
+    """Minimum TF-IDF cosine similarity between a generated question's text
+    and the UNION of evidence passages it was given, below which the
+    question is treated as ungrounded (general-knowledge invention rather
+    than evidence-derived) and regenerated - see
+    src/generation/question_generator.py and
+    src/validation/grounding_validator.py. Deliberately low: the model is
+    instructed to TRANSFORM evidence into a workplace scenario, not quote
+    it, so overlap is expected to be modest, not high."""
+    grounding_max_overlap: float = 0.75
+    """Maximum overlap between a generated question and any single cited
+    passage, above which the question is treated as too close to a
+    near-verbatim copy of the guide (rather than a transformed question)
+    and rejected - the anti-copying half of the same check."""
+    cross_paper_max_similarity: float = 0.6
+    """Maximum TF-IDF cosine similarity allowed between a newly generated
+    section question and any earlier paper's question for the same section
+    (src/validation/cross_paper_novelty.py) before it is treated as too
+    similar and regenerated with a resampled evidence set - this is what
+    keeps Paper 2/3 genuinely different from Paper 1, not just relabeled."""
+    grounding_max_retries: int = 3
+    """Maximum regeneration attempts for a single section's question when it
+    fails grounding or cross-paper novelty (separate from
+    generation_max_retries, which only covers transient provider errors)."""
+    memo_max_retries: int = 3
+    """Maximum regeneration attempts for a single question's marking memo
+    when its criteria marks fail to reconcile with the question's/sub-
+    question's actual assigned marks, OR when its answer fails answer-side
+    grounding (see answer_grounding_min_overlap below) -
+    src/generation/memo_generator.py. Marks-reconciliation was a real,
+    observed failure mode where the model's free-text criteria list
+    arithmetic drifts from the (already fixed, non-negotiable) marks it
+    was given. Same bounded-retry-then-fail-loudly shape as
+    grounding_max_retries, kept as a separate knob because it governs a
+    different generation stage with a different failure cause."""
+    answer_grounding_min_overlap: float = 0.08
+    """Minimum TF-IDF-free cosine similarity between a generated memo's
+    model answer and its retrieved answer-side evidence
+    (src/retrieval/evidence_selector.select_answer_evidence), below which
+    the answer is treated as unsupported invention rather than
+    evidence-derived and rejected/regenerated - see
+    src/generation/memo_generator._answer_grounding_ok. Deliberately has NO
+    matching maximum-overlap ceiling the way question grounding does
+    (grounding_max_overlap): a question must be an ORIGINAL scenario, so
+    reading like the source passage is a copying defect; a memo's model
+    answer is a CORRECT TECHNICAL EXPLANATION, so closely reflecting what
+    the guide actually states is the intended, desired outcome, not a
+    defect - see that function's docstring."""
+    answer_relevance_min_overlap: float = 0.05
+    """Minimum cosine similarity a memo's model answer must have with the
+    question it is answering, and a low sanity floor for how related a
+    question's marking criteria must be to its own model answer - both are
+    loose "not obviously disconnected" checks (see
+    src/generation/memo_generator._answer_grounding_ok), deliberately set
+    lower than answer_grounding_min_overlap since criteria descriptions are
+    terse/keyword-based rather than full prose and would otherwise false-
+    reject correct, well-written criteria."""
     generation_max_retries: int = 3
     """Maximum attempts for a single provider call. Only transient
     provider-level failures are retried (see
@@ -65,8 +132,8 @@ class SecurityConfig:
     min_seed: int = 0
     max_seed: int = 2_147_483_647  # 2^31 - 1
 
-    # -- Rate limiting (src/security/rate_limiter.py) - prepared for a
-    # future API layer; not wired to anything live in this CLI-only build.
+    # -- Rate limiting (src/security/rate_limiter.py) - ACTIVELY ENFORCED on
+    # every api/ endpoint (see api/dependencies.py); irrelevant to the CLI.
     rate_limit_enabled: bool = True
     generation_rate_limit: int = 5
     """Max generation requests allowed per window, per limiter key (e.g.
@@ -80,7 +147,7 @@ class SecurityConfig:
 
     # -- API layer (api/) ----------------------------------------------------
     cors_allowed_origins: str = "http://localhost:3000,http://localhost:5173"
-    """Comma-separated allow-list of origins for the future frontend. NEVER
+    """Comma-separated allow-list of origins for the deployed frontend. NEVER
     a bare "*" default - see api/app.py. Restrict to the real deployed
     frontend origin(s) in production via the CORS_ALLOWED_ORIGINS env var."""
     max_request_body_bytes: int = 16_384
@@ -88,6 +155,24 @@ class SecurityConfig:
     for any endpoint under api/ - rejects an oversized payload before it
     reaches Pydantic parsing. Generation requests are a handful of small
     fields; there is no legitimate reason for a large body."""
+
+    # -- Production safety ---------------------------------------------------
+    require_real_provider: bool = False
+    """When true, src.providers.factory.build_provider REFUSES to fall back
+    to MockProvider - it raises LLMProviderError immediately instead -
+    whenever LLM_PROVIDER resolves to "mock" (including by having been left
+    unset) or a real provider is configured but its API key is missing.
+
+    Defaults to False so every existing local-dev/CLI/test code path (which
+    legitimately wants a silent-but-loud-on-stderr MockProvider fallback
+    when no key is configured - see build_provider's own docstring) is
+    completely unaffected. Set REQUIRE_REAL_PROVIDER=true in a production
+    deployment's environment to turn a misconfiguration (a missing/blank
+    GROQ_API_KEY, a forgotten LLM_PROVIDER, a typo'd variable name) into a
+    hard startup/request failure instead of the previous behavior: printing
+    one warning to stderr and then silently serving MockProvider's fixed
+    fixture content as if it were real, learner-guide-grounded generation -
+    a real risk for a deployment whose logs are not being watched."""
 
     @classmethod
     def from_env(cls) -> SecurityConfig:
@@ -100,6 +185,27 @@ class SecurityConfig:
             ),
             max_reference_derived_text_length=_int_env(
                 "MAX_REFERENCE_DERIVED_TEXT_LENGTH", cls.max_reference_derived_text_length
+            ),
+            max_evidence_passage_chars=_int_env("MAX_EVIDENCE_PASSAGE_CHARS", cls.max_evidence_passage_chars),
+            evidence_passages_per_section=_int_env(
+                "EVIDENCE_PASSAGES_PER_SECTION", cls.evidence_passages_per_section
+            ),
+            grounding_min_overlap=float(
+                os.environ.get("GROUNDING_MIN_OVERLAP", cls.grounding_min_overlap)
+            ),
+            grounding_max_overlap=float(
+                os.environ.get("GROUNDING_MAX_OVERLAP", cls.grounding_max_overlap)
+            ),
+            cross_paper_max_similarity=float(
+                os.environ.get("CROSS_PAPER_MAX_SIMILARITY", cls.cross_paper_max_similarity)
+            ),
+            grounding_max_retries=_int_env("GROUNDING_MAX_RETRIES", cls.grounding_max_retries),
+            memo_max_retries=_int_env("MEMO_MAX_RETRIES", cls.memo_max_retries),
+            answer_grounding_min_overlap=float(
+                os.environ.get("ANSWER_GROUNDING_MIN_OVERLAP", cls.answer_grounding_min_overlap)
+            ),
+            answer_relevance_min_overlap=float(
+                os.environ.get("ANSWER_RELEVANCE_MIN_OVERLAP", cls.answer_relevance_min_overlap)
             ),
             generation_max_retries=_int_env("GENERATION_MAX_RETRIES", cls.generation_max_retries),
             generation_retry_backoff_seconds=float(
@@ -120,6 +226,7 @@ class SecurityConfig:
             read_rate_window_seconds=_int_env("READ_RATE_WINDOW_SECONDS", cls.read_rate_window_seconds),
             cors_allowed_origins=os.environ.get("CORS_ALLOWED_ORIGINS", cls.cors_allowed_origins),
             max_request_body_bytes=_int_env("MAX_REQUEST_BODY_BYTES", cls.max_request_body_bytes),
+            require_real_provider=_bool_env("REQUIRE_REAL_PROVIDER", cls.require_real_provider),
         )
 
     def cors_origins_list(self) -> list[str]:

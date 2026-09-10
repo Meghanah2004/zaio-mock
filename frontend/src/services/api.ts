@@ -4,12 +4,25 @@ import type { ErrorResponse, GenerateRequest, GenerateResponse, HealthResponse, 
  * Base URL of the FastAPI backend. Configurable via a Vite env var so the
  * frontend never hardcodes a deployment's infrastructure. Defaults to the
  * backend's documented local dev address (docs/API.md, "Local
- * development": `uvicorn api.app:app --reload` on port 8000).
+ * development": `uvicorn api.app:app --reload`, which binds `127.0.0.1`
+ * specifically, not the IPv6/wildcard address - see below).
+ *
+ * REWORK (real, observed local failure): the default here used to be
+ * `http://localhost:8000`. On a machine where `localhost` resolves to
+ * `::1` (IPv6) before `127.0.0.1`, a request to that ambiguous hostname
+ * can silently reach a completely different, unrelated process also bound
+ * to port 8000 on the wildcard/IPv6 address instead of this backend - not
+ * a CORS error, not a crash, just the wrong server answering with its own
+ * (unrelated) response shape, which every caller here would see as a
+ * generic network/server failure with no useful diagnostic. Defaulting to
+ * the explicit, unambiguous loopback address sidesteps that resolution
+ * order entirely, matching the backend's own explicit `127.0.0.1` bind.
  *
  * This is a plain, non-secret value (a URL, not a credential) - safe to
  * embed in the built frontend bundle, unlike an API key.
  */
-const API_BASE_URL: string = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ?? "http://localhost:8000";
+const configuredApiBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "");
+const API_BASE_URL: string = configuredApiBaseUrl ?? (import.meta.env.DEV ? "http://127.0.0.1:8000" : "");
 
 /** One discriminated-union error type the UI can switch on to choose wording. */
 export type ApiErrorKind = "validation" | "rate_limited" | "not_found" | "server" | "network";

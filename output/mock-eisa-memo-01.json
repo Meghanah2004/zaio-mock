@@ -10,7 +10,7 @@
         {
           "question_id": "Q-A1",
           "total_marks": 15,
-          "model_answer": "See per-part model answers below.",
+          "model_answer": "see sub_questions",
           "criteria": [
             {
               "description": "See per-part criteria in sub_questions.",
@@ -18,94 +18,108 @@
             }
           ],
           "accepted_alternatives": [],
-          "partial_credit_guidance": "Award marks per part independently. For worked calculations, award method marks even if the final numeric answer is wrong due to a single arithmetic slip, provided the method/order of operations is correct.",
+          "partial_credit_guidance": "Award marks for each sub\u2011question independently according to the criteria listed. If a response meets only part of a criterion, give the corresponding portion of the marks. Do not award any marks for irrelevant information, restating the question, or for incorrect calculations. If a student provides an alternative but correct method that satisfies the intent of a criterion, award the full marks for that criterion. The total marks awarded for the whole question must not exceed 15.",
+          "penalties": "",
           "sub_questions": [
             {
               "id": "1",
               "total_marks": 3,
-              "model_answer": "10110(2) = 1x2^4 + 0x2^3 + 1x2^2 + 1x2^1 + 0x2^0 = 16 + 0 + 4 + 2 + 0 = 22",
+              "model_answer": "Binary representation of 200 is 11001000.",
               "criteria": [
                 {
-                  "description": "Correct positional/place-value setup shown",
-                  "marks": 1
+                  "description": "Provides the correct binary representation of 200 (11001000).",
+                  "marks": 2
                 },
                 {
-                  "description": "Correct arithmetic at each place value",
-                  "marks": 1
-                },
-                {
-                  "description": "Correct final decimal value",
+                  "description": "Shows a correct conversion method (e.g., successive division by 2 with remainders) or explains the process.",
                   "marks": 1
                 }
               ],
               "accepted_alternatives": [
-                "Doubling method (start from leftmost bit, double-and-add) reaching the same final value."
+                "11001000\u2082",
+                "0b11001000",
+                "Binary string with leading zeros such as 0011001000 (still representing the same value)"
               ]
             },
             {
               "id": "2",
               "total_marks": 4,
-              "model_answer": "23 % 4 = 3; 3 * 2 = 6; 6 - 5 = 1; 1 + 1 = 2. distance = 2.",
+              "model_answer": "reading = 200. Operator precedence: multiplication first, then addition, then modulus. 200 * 3 = 600; 600 + 5 = 605; 605 % 4 = 1. Therefore channel = 1.",
               "criteria": [
                 {
-                  "description": "Modulus evaluated correctly first (correct precedence)",
+                  "description": "Identifies that reading holds the integer value 200.",
                   "marks": 1
                 },
                 {
-                  "description": "Multiplication evaluated before remaining addition/subtraction",
+                  "description": "Correctly states the operator precedence (multiplication before addition, modulus applied after the addition).",
                   "marks": 1
                 },
                 {
-                  "description": "Left-to-right evaluation of remaining +/- operators",
+                  "description": "Performs the intermediate calculations correctly (200*3 = 600 and 600+5 = 605).",
                   "marks": 1
                 },
                 {
-                  "description": "Correct final value stated",
-                  "marks": 1
-                }
-              ],
-              "accepted_alternatives": []
-            },
-            {
-              "id": "3",
-              "total_marks": 4,
-              "model_answer": "speed=50,55: not >60, no print; speed=60: not >60 (boundary), no print; speed=65: >60 -> print 'over limit'. Output: over limit (once).",
-              "criteria": [
-                {
-                  "description": "Correct loop boundary (correct number of iterations)",
-                  "marks": 1
-                },
-                {
-                  "description": "Correct condition evaluation at each iteration",
-                  "marks": 2
-                },
-                {
-                  "description": "Correct final output sequence/value stated",
+                  "description": "Computes the modulus correctly and gives the final channel value of 1.",
                   "marks": 1
                 }
               ],
               "accepted_alternatives": [
-                "Answer presented as a trace table instead of prose - equally acceptable."
+                "Any explanation that shows * is evaluated before + and that % is applied to the result of the addition, leading to a final value of 1."
+              ]
+            },
+            {
+              "id": "3",
+              "total_marks": 4,
+              "model_answer": "factor is a double, so reading is promoted to double. 200 / 2.5 = 80.0. When assigned to an int, the value is truncated toward zero, giving result = 80.",
+              "criteria": [
+                {
+                  "description": "Explains that the int reading is promoted to double for the division.",
+                  "marks": 1
+                },
+                {
+                  "description": "Calculates the division correctly (200 / 2.5 = 80.0).",
+                  "marks": 1
+                },
+                {
+                  "description": "Describes the truncation toward zero when the double result is assigned to an int.",
+                  "marks": 1
+                },
+                {
+                  "description": "States the final stored integer value is 80.",
+                  "marks": 1
+                }
+              ],
+              "accepted_alternatives": [
+                "Result expressed as 80 after truncation (even if the student writes 80.0 before truncation).",
+                "Explanation that the conversion drops any fractional part, yielding 80."
               ]
             },
             {
               "id": "4",
               "total_marks": 4,
-              "model_answer": "Python raises this TypeError because `+` between a `str` and a `float` is not defined - Python does not implicitly convert numbers to strings the way some other languages (e.g. JavaScript) do. Fix: `log = \"Trip length: \" + str(12.3) + \" km\"` (or `f\"Trip length: {12.3} km\"`), both of which produce `\"Trip length: 12.3 km\"`.",
+              "model_answer": "```\nreading = 200                     // decimal value\nbinary = \"11001000\"               // binary representation of reading\nchannel = (reading * 3 + 5) % 4    // respects precedence\nfactor = 2.5\nresult = int(reading / factor)    // division yields 80.0, truncated to 80\nidentifier = \"BIN-\" + binary + \"-\" + str(channel) + \"-\" + str(result)\n```",
               "criteria": [
                 {
-                  "description": "Correctly explains that Python's `+` operator does not implicitly convert a float to a string (unlike some other languages)",
-                  "marks": 2
+                  "description": "Includes a step that converts the integer reading to its binary string representation.",
+                  "marks": 1
                 },
                 {
-                  "description": "Provides a corrected line that runs successfully and produces the exact target string",
-                  "marks": 2
+                  "description": "Calculates channel using the expression (reading * 3 + 5) % 4, showing that precedence is respected.",
+                  "marks": 1
+                },
+                {
+                  "description": "Calculates result by dividing reading by the double factor and explicitly converting/truncating to an int.",
+                  "marks": 1
+                },
+                {
+                  "description": "Constructs the identifier string in the exact format BIN-{binary}-{channel}-{result}.",
+                  "marks": 1
                 }
               ],
               "accepted_alternatives": [
-                "str(), f-strings, .format(), or % formatting are all acceptable ways to perform the conversion."
-              ],
-              "non_awarding_notes": "An answer that only says 'you can't add a string and a number' without naming Python specifically, or that describes JavaScript's automatic string-coercion behaviour instead of Python's, does not earn the explanation marks - the question is now explicitly scoped to Python, where this code genuinely does raise an error."
+                "Any pseudo\u2011code that performs the same logical steps (e.g., using a format function, string interpolation, or separate variables) and produces the required identifier format.",
+                "Using a function call like format(\"BIN-%s-%d-%d\", binary, channel, result) is acceptable."
+              ]
             }
           ]
         }
@@ -117,7 +131,7 @@
         {
           "question_id": "Q-B1",
           "total_marks": 30,
-          "model_answer": "See per-part model answers below.",
+          "model_answer": "see sub_questions",
           "criteria": [
             {
               "description": "See per-part criteria in sub_questions.",
@@ -125,113 +139,121 @@
             }
           ],
           "accepted_alternatives": [],
-          "partial_credit_guidance": "Working but inelegant code that satisfies the functional requirement of a part earns full marks for that part; deduct only for the specific missing/incorrect behaviour named in that part's criteria, not for style choices (e.g. var vs let, quote style).",
+          "partial_credit_guidance": "Markers should award marks for each criterion that is fully met. If a response partially satisfies a criterion (e.g., correct container but missing id attribute), award no mark for that criterion but consider awarding partial credit only if the marking scheme explicitly allows it; otherwise, stick to the binary award per criterion. Ensure that total marks awarded for a sub\u2011question do not exceed its allocated marks.",
+          "penalties": "",
           "sub_questions": [
             {
               "id": "1",
-              "total_marks": 6,
-              "model_answer": "The task's stated requirement is that at least one interest-area checkbox MUST be checked before the form submits. A <form> containing <input type=\"text\" name=\"fullName\" required>, <input type=\"email\" name=\"email\" required>, and one <input type=\"checkbox\"> per interest area, each paired with a <label>, satisfies the markup part of this. However, HTML5's `required` attribute only ever validates a single element's own value - the browser has no built-in concept of 'at least one checked' across a group of checkboxes, so this specific requirement CANNOT be enforced by HTML5 attributes alone. Enforcing it requires JavaScript (e.g. checking on submit that at least one checkbox in the group is checked) or a workaround such as a single hidden required proxy input tied to the group's state.",
+              "total_marks": 5,
+              "model_answer": "<div id=\"product-carousel\">\n  <div class=\"slide\"><img src=\"placeholder1.jpg\" alt=\"Product 1\"></div>\n  <div class=\"slide\"><img src=\"placeholder2.jpg\" alt=\"Product 2\"></div>\n  <div class=\"slide\"><img src=\"placeholder3.jpg\" alt=\"Product 3\"></div>\n</div>",
               "criteria": [
                 {
-                  "description": "Uses a <form> with semantic, appropriately-labelled <input> elements",
-                  "marks": 2
-                },
-                {
-                  "description": "Uses type=\"email\" and the required attribute correctly on the name/email fields",
-                  "marks": 2
-                },
-                {
-                  "description": "Checkboxes correctly implemented and labelled for the interest areas",
+                  "description": "Container <div> with id \"product-carousel\" is present.",
                   "marks": 1
                 },
                 {
-                  "description": "Correctly states that HTML5 cannot natively enforce the stated 'at least one checkbox selected' requirement across a group, and correctly identifies that JavaScript (or an equivalent workaround) is needed to enforce it",
+                  "description": "Exactly three child elements with class \"slide\" are included.",
+                  "marks": 1
+                },
+                {
+                  "description": "Each slide element contains an <img> placeholder element.",
+                  "marks": 1
+                },
+                {
+                  "description": "All tags are correctly opened and closed (well\u2011formed HTML).",
+                  "marks": 1
+                },
+                {
+                  "description": "The markup follows HTML5 conventions (e.g., no deprecated elements).",
                   "marks": 1
                 }
               ],
               "accepted_alternatives": [
-                "Use of <label for=...> or wrapping <label> - either is acceptable.",
-                "Mentioning aria-required/role=group as an accessibility improvement is a bonus, not a substitute for the correct answer that native HTML5 validation cannot enforce this rule."
-              ],
-              "non_awarding_notes": "Claiming that HTML5 attributes alone CAN enforce 'at least one checkbox selected' earns 0 for the fourth criterion, regardless of how the checkboxes are marked up."
+                "Using a <section> or <ul> element for the container instead of <div>, provided it has the required id and contains three slide items with the class \"slide\" and an <img> inside each."
+              ]
             },
             {
               "id": "2",
-              "total_marks": 6,
-              "model_answer": "`.form-field { display: flex; flex-direction: column; }` by default, then `@media (min-width: 768px) { .form-field { flex-direction: row; align-items: center; } }`. Flexbox suits this because it lets the same markup reflow between a stacked and inline layout by changing a single property (flex-direction) rather than rewriting positioning rules.",
+              "total_marks": 10,
+              "model_answer": "#product-carousel {\n  position: relative;\n  overflow: hidden;\n}\n\n.slide {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  display: none;\n}\n\n.slide.active {\n  display: block;\n  animation: fadeIn 0.5s ease-in-out;\n}\n\n@keyframes fadeIn {\n  from { opacity: 0; }\n  to   { opacity: 1; }\n}",
               "criteria": [
                 {
-                  "description": "Correct default (mobile-first) stacked flex layout",
+                  "description": "Selector \"#product-carousel\" sets position: relative (and optionally overflow: hidden).",
                   "marks": 2
                 },
                 {
-                  "description": "Correct media query breakpoint and row layout for wider screens",
-                  "marks": 3
+                  "description": "Selector \".slide\" sets position: absolute and defines top, left, width, height, and hides slides (display: none).",
+                  "marks": 2
                 },
                 {
-                  "description": "Sensible one-sentence justification for choosing Flexbox",
-                  "marks": 1
+                  "description": "Selector \".slide.active\" makes the active slide visible (display: block) and applies the fade\u2011in animation.",
+                  "marks": 2
+                },
+                {
+                  "description": "A @keyframes rule named fadeIn is defined with from {opacity:0;} to {opacity:1;}.",
+                  "marks": 2
+                },
+                {
+                  "description": "The animation is correctly referenced in the .slide.active rule (animation: fadeIn \u2026).",
+                  "marks": 2
                 }
               ],
               "accepted_alternatives": [
-                "Any reasonable breakpoint value (e.g. 700px-800px) with correct reasoning is acceptable; 768px is the suggested convention, not a strict requirement.",
-                "CSS Grid used instead of Flexbox, provided the same responsive behaviour is achieved and justified - award full marks for the layout, partial for the Flexbox-specific justification."
+                "Using visibility: hidden / visibility: visible instead of display:none/block, as long as the fade\u2011in animation is still applied to the visible slide.",
+                "Naming the animation differently (e.g., \"fade\"), provided the @keyframes name matches the animation property."
               ]
             },
             {
               "id": "3",
-              "total_marks": 8,
-              "model_answer": "```javascript\nform.addEventListener('submit', function(e) {\n  e.preventDefault();\n  const email = form.email.value;\n  const valid = email.includes('@') && email.indexOf('.', email.indexOf('@')) > -1;\n  if (!valid) {\n    errorEl.textContent = 'Please enter a valid email address.';\n  } else {\n    errorEl.textContent = '';\n    console.log(Object.fromEntries(new FormData(form)));\n  }\n});\n```",
+              "total_marks": 10,
+              "model_answer": "class Carousel {\n  constructor(containerId) {\n    this.container = document.getElementById(containerId);\n    this.slides = this.container.querySelectorAll('.slide');\n    this.currentIndex = 0;\n    this.slides[this.currentIndex].classList.add('active');\n  }\n\n  next() {\n    this._goTo(this.currentIndex + 1);\n  }\n\n  previous() {\n    this._goTo(this.currentIndex - 1);\n  }\n\n  _goTo(index) {\n    const total = this.slides.length;\n    const newIndex = (index + total) % total;\n    this.slides[this.currentIndex].classList.remove('active');\n    this.slides[newIndex].classList.add('active');\n    this.currentIndex = newIndex;\n    this.container.dispatchEvent(new CustomEvent('slideChanged', {\n      detail: { index: this.currentIndex }\n    }));\n  }\n}\n\n// Example usage\nconst carousel = new Carousel('product-carousel');\ncarousel.next();",
               "criteria": [
                 {
-                  "description": "Correctly attaches a submit event listener and calls preventDefault()",
+                  "description": "Constructor accepts a container id, stores the container element, gathers all \".slide\" elements, and initialises currentIndex to 0 (adds 'active' to the first slide).",
                   "marks": 2
                 },
                 {
-                  "description": "Validates the email field per the stated rule (contains '@' and a '.' after it)",
+                  "description": "next() method advances to the next slide, wrapping to the first slide when at the end, and updates the 'active' class appropriately.",
                   "marks": 3
                 },
                 {
-                  "description": "Displays an inline error without alert() when invalid",
+                  "description": "previous() method moves to the previous slide, wrapping to the last slide when at the beginning, and updates the 'active' class.",
                   "marks": 2
                 },
                 {
-                  "description": "Logs form data to the console when valid",
+                  "description": "After changing slides, a CustomEvent named \"slideChanged\" is dispatched from the container with detail containing the new index.",
+                  "marks": 2
+                },
+                {
+                  "description": "A short usage example shows creating an instance with the required id and calling the next() method.",
                   "marks": 1
                 }
               ],
               "accepted_alternatives": [
-                "Use of a regular expression for email validation instead of includes()/indexOf(), provided it correctly rejects/accepts the same cases.",
-                "Reading field values via `document.getElementById` instead of the form's named-element access - equally acceptable."
-              ],
-              "non_awarding_notes": "Using alert() for the error message earns 0 for the 'inline error' criterion even if the validation logic is correct."
+                "Implementing the class with prototype functions instead of the ES6 class syntax, provided the same public methods (next, previous) and event dispatch behaviour exist.",
+                "Dispatching the event with new Event('slideChanged') and then assigning event.detail manually, as long as the index is conveyed to listeners."
+              ]
             },
             {
               "id": "4",
-              "total_marks": 10,
-              "model_answer": "```javascript\nclass Member {\n  constructor(name, booksRead) {\n    this.name = name;\n    this._booksRead = booksRead;\n  }\n  get booksRead() {\n    return this._booksRead;\n  }\n  set booksRead(value) {\n    if (value < 0) throw new Error('booksRead cannot be negative');\n    this._booksRead = value;\n  }\n}\n```\nThis demonstrates ENCAPSULATION: the internal field is hidden behind an underscore-prefixed (or truly private #-prefixed) property, and all reads/writes are mediated by the getter/setter, which is what lets the class enforce the 'no negative values' invariant in one place.",
+              "total_marks": 5,
+              "model_answer": "Separating the front\u2011end (HTML/CSS/JS) from the back\u2011end (API services) means the carousel UI runs entirely in the browser while product data is fetched via HTTP calls. Because the two layers communicate only through the API, a change to the UI (e.g., styling or animation) can be deployed without rebuilding the API, and an API change can be released without touching the front\u2011end code, allowing independent and faster deployments.",
               "criteria": [
                 {
-                  "description": "Correct ES6 class syntax with constructor",
-                  "marks": 3
-                },
-                {
-                  "description": "Correct getter implementation",
+                  "description": "States that the front\u2011end runs in the browser and the back\u2011end provides data via an API.",
                   "marks": 2
                 },
                 {
-                  "description": "Setter correctly rejects/handles negative values",
-                  "marks": 3
+                  "description": "Explains that changes to one layer can be deployed without affecting the other, enabling independent releases.",
+                  "marks": 2
                 },
                 {
-                  "description": "Correctly names encapsulation and gives a valid reason it matters here",
-                  "marks": 2
+                  "description": "Mentions a benefit such as reduced coupling or faster release cycles.",
+                  "marks": 1
                 }
               ],
               "accepted_alternatives": [
-                "Use of true private fields (`#hoursPledged`) instead of the underscore convention.",
-                "Setter that clamps to 0 or ignores the invalid assignment instead of throwing, provided the negative value never becomes the stored value.",
-                "Candidate names a different but defensibly-linked principle (e.g. 'data hiding') if their justification correctly describes encapsulation's mechanism."
+                "Any equivalent explanation that highlights the decoupling of UI code from server\u2011side services and the resulting independent deployment capability."
               ]
             }
           ]
@@ -244,7 +266,7 @@
         {
           "question_id": "Q-C1",
           "total_marks": 15,
-          "model_answer": "See per-part model answers below.",
+          "model_answer": "see sub_questions",
           "criteria": [
             {
               "description": "See per-part criteria in sub_questions.",
@@ -252,58 +274,73 @@
             }
           ],
           "accepted_alternatives": [],
-          "partial_credit_guidance": "This is a design task with no single correct diagram. Award marks for correct modelling concepts and internally consistent relationships/flow, not for matching an exact reference diagram.",
+          "partial_credit_guidance": "Markers should award marks proportionally for each criterion that is satisfied. If a response meets part of a criterion (e.g., includes most but not all essential classes) award the full mark for that criterion only if the requirement is fully met; otherwise give no mark for that criterion and note the shortfall in feedback. For criteria that allow multiple correct approaches (e.g., alternative class names or diagram notations), award the mark as long as the alternative is logically equivalent and correctly expressed. No marks are awarded for merely restating the question, providing vague descriptions, or omitting required UML elements such as visibility symbols or message ordering.",
+          "penalties": "",
           "sub_questions": [
             {
               "id": "1",
-              "total_marks": 8,
-              "model_answer": "Patient(patientId, name, contactNumber; requestAppointment(), cancelAppointment()); Doctor(doctorId, name, specialty; isAvailable(), acceptAppointment()); Appointment(appointmentId, dateTime, status; notifyPatient(), expire()). Associations: Patient 1..* Appointment (a patient may have many appointments), Appointment *..1 Doctor (each appointment is with exactly one doctor, a doctor may have many appointments)",
+              "total_marks": 7,
+              "model_answer": "Class Member {\n  -memberId: int               // private attribute\n  -name: String                // private attribute\n  -email: String               // private attribute\n  +register(): void           // public operation\n  +login(): boolean           // public operation\n}\n\nClass Book {\n  -isbn: String               // private attribute\n  -title: String              // private attribute\n  -author: String             // private attribute\n  -available: boolean         // private attribute\n  +checkAvailability(): boolean // public operation\n}\n\nClass Reservation {\n  -reservationId: int         // private attribute\n  -dateReserved: Date         // private attribute\n  +create(): void             // public operation\n  +cancel(): void             // public operation\n  {static} +nextId: int = 1    // static member to generate IDs\n}\n\nClass LibraryCatalog {\n  -books: List<Book>          // private attribute\n  +findBook(isbn: String): Book // public operation\n}\n\nAssociations:\nMember \"1\" -- \"*\" Reservation\nReservation \"*\" -- \"1\" Book\nLibraryCatalog \"1\" -- \"*\" Book\n\nThe description uses standard UML notation (visibility symbols '-', '+' and the {static} keyword) and can be directly translated into a class diagram.",
               "criteria": [
                 {
-                  "description": "At least 3 plausible attributes per class (all three classes)",
-                  "marks": 3
-                },
-                {
-                  "description": "At least 2 plausible methods per class (all three classes)",
+                  "description": "Correctly identifies the core classes required for the reservation feature (e.g., Member, Book, Reservation, LibraryCatalog).",
                   "marks": 2
                 },
                 {
-                  "description": "Correct associations identified between the classes",
+                  "description": "Uses proper UML visibility symbols for all attributes (private '-') and operations (public '+').",
                   "marks": 2
                 },
                 {
-                  "description": "Correct/plausible multiplicities stated (e.g. one-to-many)",
+                  "description": "Indicates any static members (e.g., a static reservation counter) using the {static} keyword.",
+                  "marks": 1
+                },
+                {
+                  "description": "Provides a clear textual description that follows UML syntax and could be directly translated into a diagram (includes attributes, operations, and associations).",
+                  "marks": 1
+                },
+                {
+                  "description": "Does not include irrelevant classes and shows correct multiplicities for associations.",
                   "marks": 1
                 }
               ],
               "accepted_alternatives": [
-                "Any reasonably named attributes/methods that a competent developer would recognise as relevant - exact names are not required, only correct concepts and correct multiplicity direction."
+                "If the candidate uses a class named ReservationService or ReservationManager instead of Reservation, it is acceptable provided the responsibilities remain the same.",
+                "Static members may be represented as a class\u2011level attribute without the {static} keyword if the notation is otherwise clear."
               ]
             },
             {
               "id": "2",
-              "total_marks": 7,
-              "model_answer": "1) Patient requests an Appointment slot via BookingService. 2) BookingService checks Doctor's schedule. 3) Slot is full, so BookingService creates a waitlist entry for the Patient. 4) When a slot opens, BookingService updates the schedule and calls notifyPatient() on the next waitlisted Patient.",
+              "total_marks": 8,
+              "model_answer": "@startuml\nactor Member\nparticipant ReservationController\nparticipant LibraryCatalog\nparticipant Book\n\nMember -> ReservationController : requestReserve(isbn)\nactivate ReservationController\nReservationController -> LibraryCatalog : findBook(isbn)\nactivate LibraryCatalog\nLibraryCatalog --> ReservationController : Book\ndeactivate LibraryCatalog\nReservationController -> Book : checkAvailability()\nactivate Book\nBook --> ReservationController : boolean\ndeactivate Book\nalt Book is available\n    ReservationController -> Reservation : newReservation(memberId, isbn)\n    activate Reservation\n    Reservation --> ReservationController : reservationId\n    deactivate Reservation\n    ReservationController --> Member : confirmation(reservationId)\nelse Book not available\n    ReservationController --> Member : error(\"Book not available\")\nend\ndeactivate ReservationController\n@enduml\n\nThe description includes lifelines for all participants, ordered messages, activation bars (shown by 'activate'/'deactivate'), and return messages where appropriate. The syntax follows PlantUML, which can be rendered by any UML tool that supports it.",
               "criteria": [
                 {
-                  "description": "Correct initiating actor and first message",
+                  "description": "Includes correct lifelines for all relevant participants (Member, ReservationController, LibraryCatalog, Book).",
                   "marks": 2
                 },
                 {
-                  "description": "Correctly identifies the 'currently unavailable' branch (on loan / slot full) and the waitlist step",
-                  "marks": 3
+                  "description": "Shows the messages in the correct chronological order, reflecting the reservation use case flow.",
+                  "marks": 2
                 },
                 {
-                  "description": "Includes a service/coordinator object mediating between the actor and the resource",
+                  "description": "Indicates activation bars for each participant during the period they are processing a message.",
                   "marks": 1
                 },
                 {
-                  "description": "Correct final notification step once availability changes",
+                  "description": "Provides return messages (including alternative flow for unavailable book) with appropriate notation.",
+                  "marks": 1
+                },
+                {
+                  "description": "Uses a recognised UML tool syntax (e.g., PlantUML, Mermaid) that can be rendered directly.",
+                  "marks": 1
+                },
+                {
+                  "description": "Overall diagram is complete, logically consistent and free of extraneous elements.",
                   "marks": 1
                 }
               ],
               "accepted_alternatives": [
-                "Any logically consistent object names, provided the sequence of decisions and the waitlist/notify mechanism is correct."
+                "A diagram written in Mermaid syntax or another UML\u2011compatible textual format is acceptable if it contains the same participants, message order, activation indications and return messages.",
+                "The controller class may be named ReservationService or ReservationManager; the sequence remains valid as long as the interaction flow is unchanged."
               ]
             }
           ]
@@ -316,7 +353,7 @@
         {
           "question_id": "Q-D1",
           "total_marks": 20,
-          "model_answer": "See per-part model answers below.",
+          "model_answer": "see sub_questions",
           "criteria": [
             {
               "description": "See per-part criteria in sub_questions.",
@@ -324,87 +361,143 @@
             }
           ],
           "accepted_alternatives": [],
-          "partial_credit_guidance": "Accept any standard SQL dialect (MySQL, PostgreSQL, SQLite, SQL Server) as long as the syntax is internally consistent and correct for that dialect.",
+          "partial_credit_guidance": "Award marks for each clearly correct element of the answer as described in the per\u2011part criteria. If a response contains partially correct information (e.g., correct table names but missing cascade clause), allocate the corresponding portion of the marks. Do not award any marks for irrelevant content, restating the question, or vague statements that do not demonstrate the required knowledge. Ensure that the total awarded for each sub\u2011question does not exceed its allocated marks.",
+          "penalties": "",
           "sub_questions": [
             {
               "id": "1",
-              "total_marks": 6,
-              "model_answer": "CREATE TABLE Depots (depot_id INT PRIMARY KEY, name VARCHAR(100) NOT NULL, contact_email VARCHAR(100));\nCREATE TABLE Vehicles (vehicle_id INT PRIMARY KEY, registration VARCHAR(20) NOT NULL, km_since_service INT NOT NULL, service_interval_km INT NOT NULL, depot_id INT, FOREIGN KEY (depot_id) REFERENCES Depots(depot_id));",
-              "criteria": [
-                {
-                  "description": "Both tables created with sensible, correctly-typed columns",
-                  "marks": 2
-                },
-                {
-                  "description": "Primary key correctly defined on each table",
-                  "marks": 2
-                },
-                {
-                  "description": "Foreign key correctly defined linking the two tables",
-                  "marks": 2
-                }
-              ],
-              "accepted_alternatives": [
-                "Any reasonable equivalent data types for the target SQL dialect (e.g. SERIAL vs INT for the PK, TEXT vs VARCHAR).",
-                "AUTO_INCREMENT/IDENTITY on the primary key is a valid addition, not a requirement."
-              ]
-            },
-            {
-              "id": "2",
-              "total_marks": 6,
-              "model_answer": "SELECT v.registration, v.km_since_service, d.contact_email FROM Vehicles v JOIN Depots d ON v.depot_id = d.depot_id WHERE v.km_since_service > v.service_interval_km ORDER BY v.km_since_service DESC;",
-              "criteria": [
-                {
-                  "description": "Correct JOIN between the two tables on the foreign key",
-                  "marks": 2
-                },
-                {
-                  "description": "Correct WHERE condition selecting below-threshold rows",
-                  "marks": 2
-                },
-                {
-                  "description": "Correct ORDER BY direction and column",
-                  "marks": 2
-                }
-              ],
-              "accepted_alternatives": [
-                "Implicit join syntax (WHERE p.supplier_id = s.supplier_id) instead of explicit JOIN - equally acceptable.",
-                "Column order in the SELECT list may differ from the model answer."
-              ]
-            },
-            {
-              "id": "3",
               "total_marks": 4,
-              "model_answer": "UPDATE Vehicles SET km_since_service = 0 WHERE depot_id = 2; Omitting the WHERE clause would apply the price increase (or reset) to every row in the table, silently corrupting data for rows that were never meant to change.",
+              "model_answer": "A relational database is suitable because it stores data in tables that reflect the real\u2011world entities (products and categories). Each table has a defined structure (columns) which enforces data types and constraints, providing consistency. Relationships can be expressed through foreign keys, allowing products to be linked to their categories and ensuring referential integrity. The tabular model also supports powerful query languages (SQL) for retrieving and reporting inventory data efficiently.",
               "criteria": [
                 {
-                  "description": "Syntactically correct UPDATE statement with the correct filter",
-                  "marks": 2
+                  "description": "Identifies that data is stored in tables representing entities.",
+                  "marks": 1
                 },
                 {
-                  "description": "Correct explanation of the risk of omitting WHERE (mass/unintended update)",
-                  "marks": 2
+                  "description": "Explains that tables enforce structure and data types (integrity).",
+                  "marks": 1
+                },
+                {
+                  "description": "Mentions relationships via foreign keys to link products and categories.",
+                  "marks": 1
+                },
+                {
+                  "description": "Notes the ability to query and manipulate data efficiently with SQL.",
+                  "marks": 1
                 }
               ],
               "accepted_alternatives": []
             },
             {
-              "id": "4",
+              "id": "2",
               "total_marks": 4,
-              "model_answer": "Use optimistic concurrency control: include a version number or last-updated timestamp column, and require the UPDATE's WHERE clause to match the version the user last read; if no row matches (because someone else updated it first), reject the save and ask the user to reload and retry. (Pessimistic row-locking during the edit session is an equally valid alternative.)",
+              "model_answer": "CREATE TABLE Categories (\n    CategoryID INT PRIMARY KEY,\n    CategoryName VARCHAR(100) NOT NULL\n);\n\nCREATE TABLE Products (\n    ProductID INT PRIMARY KEY,\n    ProductName VARCHAR(100) NOT NULL,\n    CategoryID INT NOT NULL,\n    CONSTRAINT FK_Products_Categories FOREIGN KEY (CategoryID)\n        REFERENCES Categories(CategoryID)\n        ON DELETE CASCADE\n);",
               "criteria": [
                 {
-                  "description": "Names a valid concurrency-control technique (optimistic locking, pessimistic locking/row locks, or transactions with appropriate isolation level)",
-                  "marks": 3
+                  "description": "Creates Categories table with a primary key.",
+                  "marks": 1
                 },
                 {
-                  "description": "Explains, even briefly, how it prevents a lost update",
+                  "description": "Creates Products table with a primary key.",
+                  "marks": 1
+                },
+                {
+                  "description": "Defines a foreign key from Products.CategoryID to Categories.CategoryID.",
+                  "marks": 1
+                },
+                {
+                  "description": "Includes ON DELETE CASCADE on the foreign key.",
                   "marks": 1
                 }
               ],
               "accepted_alternatives": [
-                "Database transactions with SERIALIZABLE/REPEATABLE READ isolation.",
-                "Application-level 'last write wins with warning' design, provided the candidate explains it actually surfaces the conflict rather than silently discarding data."
+                "Using SERIAL, IDENTITY, or AUTO_INCREMENT for the primary key columns.",
+                "Defining the foreign key with a separate ALTER TABLE statement.",
+                "Naming columns or constraints differently (e.g., cat_id, prod_id)."
+              ]
+            },
+            {
+              "id": "3",
+              "total_marks": 4,
+              "model_answer": "INSERT INTO Products (ProductID, ProductName, CategoryID) VALUES (1, 'Sample Widget', 10);\nDELETE FROM Categories WHERE CategoryID = 10;\n-- Because the foreign key in Products was defined with ON DELETE CASCADE, the product row inserted above is automatically removed when the category is deleted.",
+              "criteria": [
+                {
+                  "description": "Provides a correct INSERT statement for a product.",
+                  "marks": 1
+                },
+                {
+                  "description": "Provides a correct DELETE statement for a category.",
+                  "marks": 1
+                },
+                {
+                  "description": "Describes that the related product rows are automatically deleted due to ON DELETE CASCADE.",
+                  "marks": 1
+                },
+                {
+                  "description": "Clarifies that only rows in Products referencing the deleted category are affected.",
+                  "marks": 1
+                }
+              ],
+              "accepted_alternatives": [
+                "Omitting the column list in the INSERT if values are supplied in table order.",
+                "Using different sample values for the product and category.",
+                "Stating the effect as \"the product records are removed automatically\"."
+              ]
+            },
+            {
+              "id": "4",
+              "total_marks": 4,
+              "model_answer": "Two normalization problems:\n1. **Redundancy / Repeating groups** \u2013 Storing product name, category name and customer details together causes the same product and category data to be repeated for every order, leading to update anomalies.\n2. **Transitive dependency** \u2013 Customer details depend on the order, not on the product; they are indirectly dependent on the primary key of the order table.\n\nRestructure to achieve 3NF:\n- Create separate tables: **Products** (ProductID, ProductName, CategoryID), **Categories** (CategoryID, CategoryName), **Customers** (CustomerID, CustomerName, ContactInfo), **Orders** (OrderID, CustomerID, OrderDate), and **OrderItems** (OrderItemID, OrderID, ProductID, Quantity).\n- Each non\u2011key attribute now depends only on its own table\u2019s primary key, eliminating redundancy and transitive dependencies, thus satisfying 3NF.",
+              "criteria": [
+                {
+                  "description": "Identifies redundancy/repeating\u2011group problem.",
+                  "marks": 1
+                },
+                {
+                  "description": "Identifies transitive\u2011dependency (or similar) problem.",
+                  "marks": 1
+                },
+                {
+                  "description": "Proposes a set of separate tables that remove the redundancy.",
+                  "marks": 1
+                },
+                {
+                  "description": "States that the new design meets 3NF (no transitive dependencies, each attribute depends on the key).",
+                  "marks": 1
+                }
+              ],
+              "accepted_alternatives": [
+                "Listing insertion, update, and deletion anomalies as the problems.",
+                "Proposing a slightly different table set (e.g., separating OrderDetails instead of OrderItems).",
+                "Describing the design as \"decomposing the single table into Products, Categories, Orders and Customers\"."
+              ]
+            },
+            {
+              "id": "5",
+              "total_marks": 4,
+              "model_answer": "1. **Backup verification** \u2013 Check that the nightly backups completed successfully and can be restored. This protects against data loss and ensures recovery capability.\n2. **Index maintenance** \u2013 Review index fragmentation and rebuild/reorganise indexes as needed. Proper indexes keep query performance optimal and prevent slow\u2011downs as data changes.\n(Other acceptable tasks include updating statistics, reviewing user permissions, and checking error logs.)",
+              "criteria": [
+                {
+                  "description": "Names a valid weekly administrative task (e.g., backup verification).",
+                  "marks": 1
+                },
+                {
+                  "description": "Provides a brief explanation of why the task is important.",
+                  "marks": 1
+                },
+                {
+                  "description": "Names a second valid weekly administrative task (e.g., index maintenance).",
+                  "marks": 1
+                },
+                {
+                  "description": "Provides a brief explanation of why the second task is important.",
+                  "marks": 1
+                }
+              ],
+              "accepted_alternatives": [
+                "Checking database error logs and addressing any critical warnings.",
+                "Reviewing and updating user/role permissions.",
+                "Running UPDATE STATISTICS to keep the query optimiser informed."
               ]
             }
           ]
@@ -417,7 +510,7 @@
         {
           "question_id": "Q-E1",
           "total_marks": 15,
-          "model_answer": "See per-part model answers below.",
+          "model_answer": "see sub_questions",
           "criteria": [
             {
               "description": "See per-part criteria in sub_questions.",
@@ -425,72 +518,104 @@
             }
           ],
           "accepted_alternatives": [],
-          "partial_credit_guidance": "For the algorithm part, mark the approach and complexity claim as a pair - a suboptimal but correct and correctly-analysed algorithm should not be marked down for not being the most efficient possible solution.",
+          "partial_credit_guidance": "Award marks for each sub\u2011question according to the individual criteria listed under sub_questions. If a response meets part of a criterion, give the corresponding proportion of the marks allocated to that criterion. Do not award marks for content that merely restates the question, is irrelevant, or lacks the required justification/steps. No penalty is applied unless the answer contains misinformation that could lead to insecure implementation.",
+          "penalties": "",
           "sub_questions": [
             {
               "id": "1",
               "total_marks": 4,
-              "model_answer": "Design - the update describes planning screens and their data requirements before any code is written, which is the defining activity of the design phase.",
+              "model_answer": "Select the V\u2011Model (or an Agile\u2011with\u2011Security\u2011Sprints approach) as the SDLC model. Justify that the V\u2011Model provides distinct phases with built\u2011in security activities such as threat modelling during requirements, secure design reviews, and security testing during verification, ensuring security is integrated from the start and throughout development.",
               "criteria": [
                 {
-                  "description": "Names the correct SDLC phase",
+                  "description": "Correctly identifies an appropriate SDLC model that supports security integration (e.g., V\u2011Model, Agile with security sprints, or a dedicated Secure Development Lifecycle).",
+                  "marks": 1
+                },
+                {
+                  "description": "Explains how the chosen model incorporates security activities in early phases (e.g., threat modelling, security requirements) and throughout the lifecycle.",
                   "marks": 2
                 },
                 {
-                  "description": "Justification correctly ties the phase name to the specific activity described",
-                  "marks": 2
+                  "description": "Mentions at least one specific security activity tied to a phase of the model (e.g., security code review during implementation, security testing during verification).",
+                  "marks": 1
                 }
               ],
               "accepted_alternatives": [
-                "'User Acceptance Testing' as a more specific answer for the feedback scenario, since it is a sub-activity of testing."
+                "V\u2011Model, Waterfall with dedicated security gates, Agile/Scrum with security sprints, or a formal Secure Development Lifecycle (SDL) are all acceptable provided the justification links the model to integrated security activities."
               ]
             },
             {
               "id": "2",
-              "total_marks": 6,
-              "model_answer": "```\nfunction findDuplicate(ids):\n    seen = empty set\n    for id in ids:\n        if id in seen:\n            return id\n        seen.add(id)\n    return None\n```\nApplied to a list of patient phone numbers, this returns the first ID/number already seen. Time complexity: O(n), because each element is visited once and set membership checks/inserts are O(1) on average.",
+              "total_marks": 5,
+              "model_answer": "Pseudocode example:\n\n```\nBEGIN ValidatePaymentRequest\n  // 1. Data collection\n  request \u2190 RECEIVE payment request JSON\n  amount   \u2190 request.amount\n  cardInfo \u2190 request.cardDetails\n  signature\u2190 request.signature\n\n  // 2. Basic validation\n  IF amount <= 0 THEN REJECT \"Invalid amount\"\n  IF NOT LuhnCheck(cardInfo.number) THEN REJECT \"Invalid card number\"\n\n  // 3. Cryptographic verification\n  publicKey \u2190 GET merchantPublicKey()\n  IF NOT VerifySignature(request.body, signature, publicKey) THEN REJECT \"Signature invalid\"\n\n  // 4. Business rules processing\n  IF amount > DAILY_LIMIT THEN REJECT \"Exceeds limit\"\n  // ... additional processing ...\n\n  // 5. Accept request\n  APPROVE \"Payment accepted\"\nEND\n```",
               "criteria": [
                 {
-                  "description": "Correct algorithm logic that reliably detects a duplicate",
-                  "marks": 3
-                },
-                {
-                  "description": "Uses a set/hash-based lookup rather than a nested loop (or explicitly notes the nested-loop alternative's worse complexity)",
+                  "description": "Includes a clear step for collecting required data (e.g., amount, card details, signature).",
                   "marks": 1
                 },
                 {
-                  "description": "States O(n) (or correctly justifies whatever complexity their approach actually has, e.g. O(n^2) for a nested-loop version)",
-                  "marks": 2
+                  "description": "Shows processing/validation steps for the collected data (e.g., amount check, format validation).",
+                  "marks": 1
+                },
+                {
+                  "description": "Contains a cryptographic verification step such as a digital signature check using a public key.",
+                  "marks": 1
+                },
+                {
+                  "description": "Provides decision logic that results in either acceptance or rejection of the payment request.",
+                  "marks": 1
+                },
+                {
+                  "description": "Presented in readable high\u2011level pseudocode format (consistent indentation, comments, clear flow).",
+                  "marks": 1
                 }
               ],
               "accepted_alternatives": [
-                "A correct nested-loop (O(n^2)) solution, provided the candidate correctly states O(n^2) rather than incorrectly claiming O(n) - full marks require complexity/approach consistency, not necessarily the optimal algorithm.",
-                "Sorting the list first then scanning for adjacent duplicates (O(n log n)), correctly justified."
+                "Any high\u2011level pseudocode that covers data collection, validation/processing, a cryptographic verification (signature, HMAC, or MAC check), and a final accept/reject decision is acceptable. The exact order of steps may vary as long as all required elements are present."
               ]
             },
             {
               "id": "3",
-              "total_marks": 5,
-              "model_answer": "This is vulnerable to SQL injection: user_input is concatenated directly into the query string, so input like `'; DROP TABLE patients; --` would execute as SQL. Fix with a parameterised query, e.g.:\n```python\nquery = \"SELECT * FROM patients WHERE surname = %s\"\ncursor.execute(query, (user_input,))\n```\nThis is safe because the database driver sends the value separately from the query structure, so it can never be interpreted as SQL code.",
+              "total_marks": 4,
+              "model_answer": "Two testing activities:\n1. Unit testing of each validation function (e.g., amount check, Luhn algorithm, signature verification). This catches logic errors early, ensuring each component works correctly before integration.\n2. Penetration testing / security fuzz testing of the API endpoints. By sending malformed or malicious requests, hidden vulnerabilities are discovered, reducing the risk of security\u2011related errors in the final product.",
               "criteria": [
                 {
-                  "description": "Correctly names SQL injection as the vulnerability",
-                  "marks": 2
+                  "description": "Identifies a first testing activity relevant to the API (e.g., unit testing, integration testing, security testing).",
+                  "marks": 1
                 },
                 {
-                  "description": "Rewrites using a parameterised query / prepared statement (or equivalent ORM safe-query method)",
-                  "marks": 2
+                  "description": "Explains how that activity helps reduce errors (e.g., catches logic bugs early, validates security controls).",
+                  "marks": 1
                 },
                 {
-                  "description": "Explains, even briefly, why the fix is safe",
+                  "description": "Identifies a second, different testing activity (e.g., penetration testing, fuzz testing, code review, static analysis).",
+                  "marks": 1
+                },
+                {
+                  "description": "Explains the error\u2011reduction benefit of the second activity.",
                   "marks": 1
                 }
               ],
               "accepted_alternatives": [
-                "Use of an ORM's query builder (e.g. Django ORM, SQLAlchemy filter) instead of raw parameterised SQL.",
-                "Placeholder syntax specific to the candidate's chosen language/driver (?, %s, $1, :name) - any correct parameterisation mechanism is acceptable."
+                "Any two distinct testing activities such as unit testing + integration testing, static code analysis + security testing, load testing + code review, etc., are acceptable provided the explanation links each activity to error reduction."
+              ]
+            },
+            {
+              "id": "4",
+              "total_marks": 2,
+              "model_answer": "Recommend implementing structured logging with correlation IDs for every request. This practice records security\u2011relevant events (e.g., authentication success/failure) in a consistent format, making it easier to trace actions through the system and audit suspicious activity.",
+              "criteria": [
+                {
+                  "description": "States a concrete coding practice that supports security and traceability (e.g., structured logging with correlation IDs, comprehensive inline security comments, or use of a static analysis tool).",
+                  "marks": 1
+                },
+                {
+                  "description": "Briefly describes the benefit of the practice for maintaining security and enabling traceability.",
+                  "marks": 1
+                }
               ],
-              "non_awarding_notes": "Manually escaping quotes in user_input (string replace) does not earn the 'safe fix' marks - it is a known-weak mitigation, not parameterisation."
+              "accepted_alternatives": [
+                "Other valid practices include: mandatory security\u2011focused code comments, use of immutable audit logs, or employing a static analysis/security linting tool. Any practice that improves traceability and security is acceptable."
+              ]
             }
           ]
         }
@@ -502,32 +627,77 @@
         {
           "question_id": "Q-F1",
           "total_marks": 5,
-          "model_answer": "The relevant principle is professional practice / change-management governance: release/change logs exist so the team (and future maintainers) can trace what changed, diagnose regressions quickly, and meet any audit or client-reporting obligations - 'shipping faster' by skipping them creates hidden risk rather than removing real work. Before agreeing, the developer should raise the trade-off with the team lead, propose a minimal but real changelog entry, and only skip it if a documented team policy explicitly allows that for this type of release.",
+          "model_answer": "see sub_questions",
           "criteria": [
             {
-              "description": "Names a specific, correctly-applicable governance/ethical/legislative or professional-practice principle (not a vague 'be ethical')",
-              "marks": 2
-            },
-            {
-              "description": "Explains a concrete, appropriate action to take before complying (e.g. check scope, escalate, confirm necessity) rather than blanket compliance or blanket refusal",
-              "marks": 2
-            },
-            {
-              "description": "Answer is coherent and specific to the scenario given, not generic boilerplate",
-              "marks": 1
+              "description": "See per-part criteria in sub_questions.",
+              "marks": 5
             }
           ],
-          "accepted_alternatives": [
-            "Any correctly-reasoned principle in the same family (e.g. 'confidentiality by design', 'least-privilege data sharing', 'informed consent') is acceptable even if named differently from the model answer."
-          ],
-          "partial_credit_guidance": "A candidate who identifies the right concern but proposes an overly extreme response (flat refusal with no escalation path, or unquestioning compliance) should lose the second criterion's marks but may still earn the first and third.",
-          "penalties": ""
+          "accepted_alternatives": [],
+          "partial_credit_guidance": "Markers should award marks for each sub\u2011question according to the detailed criteria below. If a response partially meets a criterion (e.g., mentions a governance structure but it is vague or not clearly a distinct second one), award the mark only if the intent is clear and relevant. No marks are given for generic statements that do not identify specific structures, legislation, implications, or ethical actions. If the answer includes an alternative but correct governance structure, legislation or ethical step, award the mark as long as it satisfies the criterion. No penalties are applied unless the response contains misinformation that could mislead future practice, in which case the marker may deduct the mark for that specific criterion.",
+          "penalties": "",
+          "sub_questions": [
+            {
+              "id": "1",
+              "total_marks": 2,
+              "model_answer": "Two appropriate governance structures or processes could be:\\n1. The IT Governance Committee or IT steering board, which oversees compliance with data handling policies.\\n2. The organisation\u2019s Data Protection Policy / Information Security Management System (ISMS) that defines how data may be stored, transferred and accessed.\\nEither pair of relevant structures earns full marks.",
+              "criteria": [
+                {
+                  "description": "One relevant governance structure or process is identified (e.g., IT Governance Committee, Data Protection Policy, risk management process, internal audit) \u2013 1 mark.",
+                  "marks": 1
+                },
+                {
+                  "description": "A second distinct governance structure or process is identified \u2013 1 mark.",
+                  "marks": 1
+                }
+              ],
+              "accepted_alternatives": [
+                "IT steering board and Information Security Policy",
+                "Risk management framework and internal audit function",
+                "Change management process and data classification policy"
+              ]
+            },
+            {
+              "id": "2",
+              "total_marks": 2,
+              "model_answer": "The Protection of Personal Information Act (POPIA) is the key legislation governing workplace data handling in South Africa. One implication is that unauthorised copying of employee or client data may constitute a breach of POPIA, so the junior developer should report the incident to the data\u2011protection officer before taking any further action.",
+              "criteria": [
+                {
+                  "description": "Correctly names a South African data\u2011handling legislation (e.g., POPIA, ECTA) \u2013 1 mark.",
+                  "marks": 1
+                },
+                {
+                  "description": "Provides a correct implication of that legislation for the junior developer\u2019s decision (e.g., need to report the breach, potential legal consequences) \u2013 1 mark.",
+                  "marks": 1
+                }
+              ],
+              "accepted_alternatives": [
+                "Electronic Communications and Transactions Act (ECTA) with implication that the act requires reporting of unauthorised data transfers",
+                "Cybercrimes Act with implication that the copying could be a cyber\u2011offence requiring escalation"
+              ]
+            },
+            {
+              "id": "3",
+              "total_marks": 1,
+              "model_answer": "The ethical issue is the breach of confidentiality and misuse of company data by copying it onto a personal USB drive. The most appropriate first step is to report the incident to the line manager or the designated compliance officer.",
+              "criteria": [
+                {
+                  "description": "Correctly describes the ethical issue (unauthorised data copying) and recommends the appropriate first step (report to manager/compliance officer) \u2013 1 mark.",
+                  "marks": 1
+                }
+              ],
+              "accepted_alternatives": [
+                "Identify the breach of confidentiality and advise the junior developer to raise the matter with HR or the data\u2011protection officer as the first action"
+              ]
+            }
+          ]
         }
       ]
     }
   ],
   "generation_meta": {
-    "provider": "mock",
-    "seed": 9
+    "provider": "groq",
+    "seed": 12345
   }
 }

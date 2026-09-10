@@ -12,7 +12,9 @@ def render_paper_markdown(paper: dict[str, Any]) -> str:
     lines.append("")
     lines.append(f"> **{paper['status_disclaimer']}**")
     lines.append("")
-    lines.append(f"- **NQF Level(s):** {paper['nqf_level']}")
+    nqf = paper["nqf_level"]
+    nqf_display = ", ".join(str(n) for n in nqf) if isinstance(nqf, list) else str(nqf)
+    lines.append(f"- **NQF Level:** {nqf_display}")
     lines.append(f"- **Duration:** {paper['duration_minutes']} minutes")
     lines.append(f"- **Total Marks:** {paper['total_marks']}")
     lines.append("")
@@ -65,6 +67,13 @@ def render_memo_markdown(memo: dict[str, Any], paper: dict[str, Any] | None = No
             qnum = q["question_number"] if q else mq["question_id"]
             lines.append(f"### Question {qnum} ({mq['total_marks']} marks)")
             lines.append("")
+
+            grounding = q.get("grounding") if q else None
+            if grounding:
+                lines.append("*Source grounding (assessor reference only):*")
+                for g in grounding:
+                    lines.append(f"- {g['document']}, page {g['page']} - {g['reason']}")
+                lines.append("")
 
             if mq.get("sub_questions"):
                 for msq in mq["sub_questions"]:

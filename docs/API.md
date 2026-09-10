@@ -99,22 +99,40 @@ stale.
 
 ## Why generation is synchronous (no queue)
 
-With `MockProvider` (the default; no `ANTHROPIC_API_KEY` is configured in
-this environment), `/api/generate` completes in well under a second, so a
-plain synchronous request/response is the simplest correct design - adding
-Celery/Redis/a job queue for sub-second work would be pure over-engineering,
-explicitly against this project's instructions.
+With `MockProvider` (used by every automated test, and by any developer
+without a configured provider key), `/api/generate` completes in well
+under a second, so a plain synchronous request/response is the simplest
+correct design - adding Celery/Redis/a job queue for sub-second work would
+be pure over-engineering, explicitly against this project's instructions.
 
-**Documented limitation**: with a real `AnthropicProvider` configured, one
-`/api/generate` call issues 13 sequential provider calls for the current
-blueprint (6 question-generation + 6 memo-generation + 1 quality-review),
-which could take tens of seconds to a few minutes depending on API
-latency. This is synchronous today. If real-provider usage in production
-becomes the common case, a background-job pattern would be the natural
-next step - not built here, because no real-provider run has ever been
-exercised in this environment to justify it, and the instructions are
-explicit not to add a queue without proven need. A reverse proxy placed in
-front of this API in that scenario would need a generous request timeout.
+**With the real, production-configured provider (`LLM_PROVIDER=groq`,
+`GROQ_MODEL=openai/gpt-oss-120b`)**: one `/api/generate` call issues up to
+13 sequential provider calls for the current blueprint (6 question-
+generation + 6 memo-generation + 1 quality-review, each with its own
+bounded retry budget - see `SecurityConfig.generation_max_retries`/
+`grounding_max_retries`/`memo_max_retries`), which real observation (not
+speculation - see `docs/SECURITY-AUDIT.md`'s 2026-09-10 update) shows can
+take anywhere from a few seconds to several minutes depending on Groq
+latency and retry pressure. This is synchronous today. Two concrete,
+observed implications for deployment, not hypothetical ones:
+  - **Reverse proxy / platform request timeout must be generous** (at
+    least a few minutes) for `/api/generate` specifically, or a slow-but-
+    legitimate real generation will be killed mid-flight by the proxy
+    before the backend itself gives up.
+  - **Groq's daily token quota is a real, external constraint** (observed
+    limit: 200,000 tokens/day on the tier used during development). When
+    exhausted, every `/api/generate` call fails fast with a safe 502 (see
+    "Error responses" below) until the quota resets - this is not a queue-
+    depth problem a background-job pattern would fix, it is an external
+    rate limit that must simply be waited out or upgraded.
+
+If real-provider usage in production becomes frequent enough that
+synchronous multi-minute requests become a real UX problem (not just a
+worst-case possibility), a background-job pattern (submit -> poll/websocket
+for status -> fetch result once ready) is the natural next step - not built
+here, because the current synchronous design has not yet been shown to be
+insufficient for this project's actual usage pattern (a small number of
+generations, not high-throughput concurrent traffic).
 
 ## Rate limiting
 
@@ -230,12 +248,13 @@ secret.
 
 ## Secrets
 
-`ANTHROPIC_API_KEY` (and every other secret) stays server-side. It is
-read once by `src/config.LLMSettings` from the environment, never appears
-in a request or response model, and is never logged - unchanged from
-Phase 1. `tests/test_api_security.py` includes a regression test proving
-an unexpected internal error containing a credential-shaped string never
-reaches the client.
+`GROQ_API_KEY` (the production credential - `ANTHROPIC_API_KEY`/
+`GEMINI_API_KEY` too, for either alternative real provider) stays
+server-side. It is read once by `src/config.LLMSettings` from the
+environment, never appears in a request or response model, and is never
+logged - unchanged from Phase 1. `tests/test_api_security.py` includes a
+regression test proving an unexpected internal error containing a
+credential-shaped string never reaches the client.
 
 ## Local development
 

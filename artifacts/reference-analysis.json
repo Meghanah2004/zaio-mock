@@ -1,0 +1,1037 @@
+{
+  "generated_at": "2026-09-09T14:52:41.827490+00:00",
+  "source_base_dir": "/Users/harikasiyyadri/Desktop/zaio/sdev",
+  "documents_analyzed": 60,
+  "documents_skipped": [],
+  "extraction_errors": [],
+  "qualification_title": "Occupational Certificate: Software Developer",
+  "saqa_qual_id": "118707",
+  "occupational_code": "251201005",
+  "nqf_levels_present": [
+    4,
+    5
+  ],
+  "modules": [
+    {
+      "module_code": "251201-005-00-KM-02",
+      "km": "02",
+      "display_title": "DESKTOP AND PROFESSIONAL SOFTWARE TO COMMUNICATE AND VISUALIZE INFORMATION",
+      "nqf_level": 4,
+      "notional_hours": 80,
+      "credits": 8,
+      "occupational_code": "251201005",
+      "saqa_qual_id": null,
+      "qualification_title": "Occupational Certificate: Software Developer",
+      "purpose_summary": "The main focus of the learning in this knowledge module is to build an understanding of the functioning and purpose of information, computer technology and computer hardware units. The learning of this module will also enable the learner to acquire an understanding of the principles of electronic communication and the operation and functioning of soft-ware packages, including the design of...",
+      "entry_requirement": "NQF 4",
+      "source_file": "Module 2-Learner Guide.pdf",
+      "page_count": 118,
+      "knowledge_topics": [
+        {
+          "code": "KM-02-KT01",
+          "title": "Electronic Communication",
+          "weight_percent": 15.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-02-KT02",
+          "title": "Software Apps for office use",
+          "weight_percent": 15.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-02-KT03",
+          "title": "Operating a software package",
+          "weight_percent": 15.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-02-KT04",
+          "title": "Text documents using an appropriate software package",
+          "weight_percent": 40.0,
+          "source": "intro_summary"
+        },
+        {
+          "code": "KM-02-KT05",
+          "title": "Presentations using and appropriate software package",
+          "weight_percent": 15.0,
+          "source": "intro_summary"
+        }
+      ],
+      "kt_weight_sum_percent": 100.0,
+      "kt_missing_weight_codes": []
+    },
+    {
+      "module_code": "251201-005-00-KM-03",
+      "km": "03",
+      "display_title": "AUTOMATED WEBSCRAPING AS A DATA SOURCE",
+      "nqf_level": 4,
+      "notional_hours": 80,
+      "credits": 8,
+      "occupational_code": "251201005",
+      "saqa_qual_id": null,
+      "qualification_title": "Occupational Certificate: Software Developer",
+      "purpose_summary": "The main focus of the learning in this knowledge module is to build an understanding of the design aspect applicable to various types of publications and documents",
+      "entry_requirement": "NQF 4",
+      "source_file": "Module 3-Learner Guide.pdf",
+      "page_count": 180,
+      "knowledge_topics": [
+        {
+          "code": "KM-03-KT01",
+          "title": "Sources of data",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-03-KT02",
+          "title": "Webscraping and access to accurate data",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-03-KT03",
+          "title": "Big Data",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-03-KT04",
+          "title": "Data quality",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-03-KT05",
+          "title": "Best practices for data governance",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-03-KT06",
+          "title": "Legislation (e.g. POPI Act)",
+          "weight_percent": 25.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-03-KT07",
+          "title": "Wrangling",
+          "weight_percent": 15.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-03-KT08",
+          "title": "Data structures",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        }
+      ],
+      "kt_weight_sum_percent": 100.0,
+      "kt_missing_weight_codes": []
+    },
+    {
+      "module_code": "251201-005-00-KM-04",
+      "km": "04",
+      "display_title": "LOGICAL THINKING AND BASIC CALCULATIONS",
+      "nqf_level": 4,
+      "notional_hours": 20,
+      "credits": 2,
+      "occupational_code": "251201005",
+      "saqa_qual_id": null,
+      "qualification_title": "Occupational Certificate: Software Developer",
+      "purpose_summary": "The main focus of the learning in this knowledge module is to acquire mathematical thinking theory for solving problems and acquire basic maths knowledge for use during data analytics",
+      "entry_requirement": "NQF 4",
+      "source_file": "Module 4-Learner Guide.pdf",
+      "page_count": 85,
+      "knowledge_topics": [
+        {
+          "code": "KM-04-KT01",
+          "title": "Mathematical thinking skills for problem solving",
+          "weight_percent": 15.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-04-KT02",
+          "title": "Conversion between decimal and binary systems",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-04-KT03",
+          "title": "Expressing size and magnitude",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-04-KT04",
+          "title": "Error in calculations",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-04-KT05",
+          "title": "Cartesian coordinate system",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-04-KT06",
+          "title": "Pythagorean theorem for finding the distance",
+          "weight_percent": 5.0,
+          "source": "section_header+intro_fill"
+        },
+        {
+          "code": "KM-04-KT07",
+          "title": "Operator precedence",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-04-KT08",
+          "title": "Integer division",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-04-KT09",
+          "title": "Modulus",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-04-KT10",
+          "title": "Increments",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-04-KT11",
+          "title": "Mixing types",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        }
+      ],
+      "kt_weight_sum_percent": 100.0,
+      "kt_missing_weight_codes": []
+    },
+    {
+      "module_code": "251201-005-00-KM-05",
+      "km": "05",
+      "display_title": "Computing Theory",
+      "nqf_level": 4,
+      "notional_hours": 20,
+      "credits": 2,
+      "occupational_code": "251201005",
+      "saqa_qual_id": null,
+      "qualification_title": "Occupational Certificate: Software Developer",
+      "purpose_summary": "The main focus of the learning in this knowledge module is to build an understanding of programming as creating a set of instructions to a computer on how to perform a task using coding and programming languages",
+      "entry_requirement": "NQF 4",
+      "source_file": "Module 5-Learner Guide.pdf",
+      "page_count": 87,
+      "knowledge_topics": [
+        {
+          "code": "KM-05-KT01",
+          "title": "Introduction to programming languages",
+          "weight_percent": 30.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-05-KT02",
+          "title": "Programming basics",
+          "weight_percent": 40.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-05-KT03",
+          "title": "Software applications",
+          "weight_percent": 30.0,
+          "source": "section_header"
+        }
+      ],
+      "kt_weight_sum_percent": 100.0,
+      "kt_missing_weight_codes": []
+    },
+    {
+      "module_code": "251201-005-00-KM-06",
+      "km": "06",
+      "display_title": "Software Development with HTML5, Opensource Frameworks and Libraries",
+      "nqf_level": 5,
+      "notional_hours": 160,
+      "credits": 16,
+      "occupational_code": "251201005",
+      "saqa_qual_id": "118707",
+      "qualification_title": "Occupational Certificate: Software Developer",
+      "purpose_summary": "The main focus of the learning in this knowledge module is to build an understanding of these topics: Core Programming, Object -Oriented Programming, General Software Development, Web Applications, Desktop Applications, Databases, Manage the Application Lif e Cycle, Build the User Interface by Using HTML5, Format the User Interface by Using CSS, and Code by Using JavaScript",
+      "entry_requirement": "NQF 4",
+      "source_file": "Module 6-Learner Guide.pdf",
+      "page_count": 100,
+      "knowledge_topics": [
+        {
+          "code": "KM-06-KT01",
+          "title": "Core programming",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-06-KT02",
+          "title": "Object-Oriented Programming",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-06-KT03",
+          "title": "General Software Development",
+          "weight_percent": 15.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-06-KT04",
+          "title": "Web applications",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-06-KT05",
+          "title": "Applications development",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-06-KT06",
+          "title": "HTML5",
+          "weight_percent": 15.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-06-KT07",
+          "title": "CSS",
+          "weight_percent": 15.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-06-KT08",
+          "title": "JavaScript",
+          "weight_percent": 15.0,
+          "source": "section_header"
+        }
+      ],
+      "kt_weight_sum_percent": 100.0,
+      "kt_missing_weight_codes": []
+    },
+    {
+      "module_code": "251201-005-00-KM-07",
+      "km": "07",
+      "display_title": "UML As Standard Modelling Language for Software and Systems Development",
+      "nqf_level": 5,
+      "notional_hours": 40,
+      "credits": 4,
+      "occupational_code": "251201005",
+      "saqa_qual_id": "118707",
+      "qualification_title": "Occupational Certificate: Software Developer",
+      "purpose_summary": "The main focus of the learning in this knowledge module is to build an understanding of the modelling tools, topics and theory and how modelling assist in focussing on, capturing, documenting and communicating a system design. The Unified Modelling Language (UML) is the standard modelling language for software and systems development",
+      "entry_requirement": "NQF 4",
+      "source_file": "Module 7-Learner Guide.pdf",
+      "page_count": 283,
+      "knowledge_topics": [
+        {
+          "code": "KM-07-KT01",
+          "title": "Introduction",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-07-KT02",
+          "title": "Modelling requirements",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-07-KT03",
+          "title": "Workflows: activity diagrams",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-07-KT04",
+          "title": "Classes and class diagrams",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-07-KT05",
+          "title": "Advanced class diagrams",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-07-KT06",
+          "title": "Object diagrams",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-07-KT07",
+          "title": "Sequence diagrams",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-07-KT08",
+          "title": "Communication diagrams",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-07-KT09",
+          "title": "Timing diagrams",
+          "weight_percent": 15.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-07-KT10",
+          "title": "Interaction overview diagrams",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-07-KT11",
+          "title": "Classes internal structure: composite structures",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-07-KT12",
+          "title": "Component diagrams",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-07-KT13",
+          "title": "Packages",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-07-KT14",
+          "title": "State machine diagrams",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-07-KT15",
+          "title": "Deployed diagrams",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        }
+      ],
+      "kt_weight_sum_percent": 100.0,
+      "kt_missing_weight_codes": []
+    },
+    {
+      "module_code": "251201-005-00-KM-08",
+      "km": "08",
+      "display_title": "Obtaining, Querying, Manipulating and Presenting Data with and without MVC",
+      "nqf_level": 5,
+      "notional_hours": 60,
+      "credits": 6,
+      "occupational_code": "251201005",
+      "saqa_qual_id": "118707",
+      "qualification_title": "Occupational Certificate: Software Developer",
+      "purpose_summary": "The main focus of the learning in this knowledge module is to acquire general knowledge and understanding of the principles and methods to obtain, query, manipulate and present data with and without MVC",
+      "entry_requirement": "NQF 4",
+      "source_file": "Module 8-Learner Guide.pdf",
+      "page_count": 125,
+      "knowledge_topics": [
+        {
+          "code": "KM-08-KT01",
+          "title": "Understanding core database concepts",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-08-KT02",
+          "title": "Creating database",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-08-KT03",
+          "title": "Manipulating data",
+          "weight_percent": 25.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-08-KT04",
+          "title": "Understanding Data",
+          "weight_percent": 27.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-08-KT05",
+          "title": "Administering a database",
+          "weight_percent": 28.0,
+          "source": "section_header"
+        }
+      ],
+      "kt_weight_sum_percent": 100.0,
+      "kt_missing_weight_codes": []
+    },
+    {
+      "module_code": "251201-005-00-KM-09",
+      "km": "09",
+      "display_title": "Software Development Life Cycle, Programming Languages, Algorithms and Security",
+      "nqf_level": 5,
+      "notional_hours": 30,
+      "credits": 3,
+      "occupational_code": "251201005",
+      "saqa_qual_id": "118707",
+      "qualification_title": "Occupational Certificate: Software Developer",
+      "purpose_summary": "The main focus of the learning in this knowledge module is to acquire mathematical thinking theory for solving problems and acquire basic maths knowledge for use during data analytics",
+      "entry_requirement": "NQF 4",
+      "source_file": "Module 9-Learner Guide.pdf",
+      "page_count": 280,
+      "knowledge_topics": [
+        {
+          "code": "KM-09-KT01",
+          "title": "Introduction to software development",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-09-KT02",
+          "title": "Software Development Life Cycle",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-09-KT03",
+          "title": "The need for a solution",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-09-KT04",
+          "title": "Popular SDLC models",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-09-KT05",
+          "title": "Phase 1: Requirement collection and analysis",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-09-KT06",
+          "title": "Phase 2: Feasibility study",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-09-KT07",
+          "title": "Phase 3: Design",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-09-KT08",
+          "title": "Phase 4: Coding",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-09-KT09",
+          "title": "Phase 5: Testing",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-09-KT10",
+          "title": "Phase 6: Installation/Deployment",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-09-KT11",
+          "title": "Phase 7: Maintenance",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-09-KT12",
+          "title": "Software development logging and commenting",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-09-KT13",
+          "title": "Programming and programming languages",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-09-KT14",
+          "title": "Coding",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-09-KT15",
+          "title": "Overview of algorithms in information technology",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-09-KT16",
+          "title": "Algorithms",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-09-KT17",
+          "title": "Programming language concepts and terminology",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-09-KT18",
+          "title": "Security topics every software developer must",
+          "weight_percent": 5.0,
+          "source": "section_header+intro_fill"
+        },
+        {
+          "code": "KM-09-KT19",
+          "title": "Machine learning",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        }
+      ],
+      "kt_weight_sum_percent": 100.0,
+      "kt_missing_weight_codes": []
+    },
+    {
+      "module_code": "251201-005-00-KM-10",
+      "km": "10",
+      "display_title": "Introduction to Software Developer Governance, Legislation and Ethics",
+      "nqf_level": 4,
+      "notional_hours": 20,
+      "credits": 2,
+      "occupational_code": "251201005",
+      "saqa_qual_id": "118707",
+      "qualification_title": "Occupational Certificate: Software Developer",
+      "purpose_summary": "The main focus of the learning in this knowledge module is to acquire general knowledge and understanding of the various legislations governing the workplace and their implications for the employer and employees. The learning of this module will also enable the learner to acquire an understanding of the principles of areas of performance management, business planning concepts, costing of products...",
+      "entry_requirement": "NQF 4",
+      "source_file": "Module 10-Learner Guide.pdf",
+      "page_count": 104,
+      "knowledge_topics": [
+        {
+          "code": "KM-10-KT01",
+          "title": "Governance",
+          "weight_percent": 20.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-10-KT02",
+          "title": "Legislation governing workplaces",
+          "weight_percent": 15.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-10-KT03",
+          "title": "Introduction to ethics and security",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-10-KT04",
+          "title": "Ethics at work",
+          "weight_percent": 14.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-10-KT05",
+          "title": "Security",
+          "weight_percent": 15.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-10-KT06",
+          "title": "Performance management",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-10-KT07",
+          "title": "Business planning",
+          "weight_percent": 7.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-10-KT08",
+          "title": "Costing of products",
+          "weight_percent": 7.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-10-KT09",
+          "title": "Resources",
+          "weight_percent": 7.0,
+          "source": "section_header"
+        }
+      ],
+      "kt_weight_sum_percent": 100.0,
+      "kt_missing_weight_codes": []
+    },
+    {
+      "module_code": "251201-005-00-KM-11",
+      "km": "11",
+      "display_title": "4IR and Future Skills",
+      "nqf_level": 4,
+      "notional_hours": 20,
+      "credits": 2,
+      "occupational_code": "251201005",
+      "saqa_qual_id": "118707",
+      "qualification_title": "Occupational Certificate: Software Developer",
+      "purpose_summary": "The main focus of the learning in this knowledge module is to build an understanding of the impact of 4IR on communities, individuals and businesses and important skills for future needs",
+      "entry_requirement": "NQF 4",
+      "source_file": "Module 11-Learner Guide.pdf",
+      "page_count": 234,
+      "knowledge_topics": [
+        {
+          "code": "KM-11-KT01",
+          "title": "4 IR emerging trends",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-11-KT02",
+          "title": "Computing Knowledge",
+          "weight_percent": 7.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-11-KT03",
+          "title": "Future skills and competencies (4IR)",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-11-KT04",
+          "title": "4 IR trends affecting businesses",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-11-KT05",
+          "title": "Interpersonal skills",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-11-KT06",
+          "title": "Intrapersonal skills",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-11-KT07",
+          "title": "Communication principles and methods",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-11-KT08",
+          "title": "Written business communication",
+          "weight_percent": 7.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-11-KT09",
+          "title": "Presentation skills",
+          "weight_percent": 7.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-11-KT10",
+          "title": "Teamwork in the workplace",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-11-KT11",
+          "title": "Committees and meetings",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-11-KT12",
+          "title": "Job descriptions and profiles",
+          "weight_percent": 5.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-11-KT13",
+          "title": "Customers and stakeholders",
+          "weight_percent": 7.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-11-KT14",
+          "title": "Customer service",
+          "weight_percent": 7.0,
+          "source": "section_header"
+        }
+      ],
+      "kt_weight_sum_percent": 100.0,
+      "kt_missing_weight_codes": []
+    },
+    {
+      "module_code": "251201-005-00-KM-12",
+      "km": "12",
+      "display_title": "Design Thinking Principles for Innovation",
+      "nqf_level": 4,
+      "notional_hours": 10,
+      "credits": 1,
+      "occupational_code": "251201005",
+      "saqa_qual_id": "118707",
+      "qualification_title": "Occupational Certificate: Software Developer",
+      "purpose_summary": "The main focus of the learning in this knowledge module is to acquire mathematical thinking theory for solving problems and acquire basic maths knowledge for use during data analytics",
+      "entry_requirement": "NQF 4",
+      "source_file": "Module 12-Learner Guide.pdf",
+      "page_count": 76,
+      "knowledge_topics": [
+        {
+          "code": "KM-12-KT01",
+          "title": "Introduction to design thinking",
+          "weight_percent": null,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-12-KT02",
+          "title": "The human element",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-12-KT03",
+          "title": "Creativity",
+          "weight_percent": 20.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-12-KT04",
+          "title": "Innovation",
+          "weight_percent": 20.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-12-KT05",
+          "title": "Design",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-12-KT06",
+          "title": "Design thinking methodology",
+          "weight_percent": 10.0,
+          "source": "section_header"
+        },
+        {
+          "code": "KM-12-KT07",
+          "title": "Application of design thinking",
+          "weight_percent": 15.0,
+          "source": "section_header"
+        }
+      ],
+      "kt_weight_sum_percent": 85.0,
+      "kt_missing_weight_codes": [
+        "KM-12-KT01"
+      ]
+    }
+  ],
+  "supplementary_slide_decks": [
+    {
+      "folder": "slides/slides km 06",
+      "file_count": 49,
+      "kt_codes_covered": [
+        "KT0101",
+        "KT0102",
+        "KT0103",
+        "KT0201",
+        "KT0202",
+        "KT0203",
+        "KT0301",
+        "KT0302",
+        "KT0303",
+        "KT0304",
+        "KT0305",
+        "KT0306",
+        "KT0307",
+        "KT0401",
+        "KT0402",
+        "KT0403",
+        "KT0404",
+        "KT0405",
+        "KT0406",
+        "KT0501",
+        "KT0502",
+        "KT0503",
+        "KT0504",
+        "KT0505",
+        "KT0601",
+        "KT0602",
+        "KT0603",
+        "KT0604",
+        "KT0605",
+        "KT0606",
+        "KT0607",
+        "KT0608",
+        "KT0609",
+        "KT0701",
+        "KT0702",
+        "KT0703",
+        "KT0704",
+        "KT0705",
+        "KT0706",
+        "KT0707",
+        "KT0708",
+        "KT0709",
+        "KT0801",
+        "KT0802",
+        "KT0803",
+        "KT0804",
+        "KT0805",
+        "KT0806",
+        "KT0808"
+      ]
+    }
+  ],
+  "assessment_instrument_findings": {
+    "total_marks_marker_hits": 0,
+    "exam_duration_marker_hits": 0,
+    "candidate_instructions_marker_hits": 0,
+    "section_ab_marker_hits": 0,
+    "memo_marker_hits": 0,
+    "embedded_worked_example_hits": 2,
+    "notes": "These counts scan the full supplied corpus for markers a real exam paper or marking memo would contain (total-marks lines, stated duration, candidate instructions, Section A/B headings, a memorandum). Non-zero 'embedded_worked_example_hits' refers to informal worked examples inside the teaching content (e.g. Module 4's binary-conversion walkthroughs), not exam questions with mark allocations."
+  },
+  "facts": [
+    {
+      "id": "F1",
+      "statement": "Qualification title stated in every module header: Occupational Certificate: Software Developer.",
+      "evidence": "Front-matter field 'Qualification Title' in all 11 supplied Learner Guides."
+    },
+    {
+      "id": "F2",
+      "statement": "SAQA Qualification ID stated as 118707 (present on Modules 6-12; absent on Modules 2-5).",
+      "evidence": "Front-matter field 'SAQA QUAL ID'."
+    },
+    {
+      "id": "F3",
+      "statement": "Occupational code stated as 251201005 on every module.",
+      "evidence": "Front-matter field 'Occupational Code'."
+    },
+    {
+      "id": "F4",
+      "statement": "Modules span NQF levels [4, 5] (Modules 2-5 and 10-12 at level 4; Modules 6-9 at level 5).",
+      "evidence": "Front-matter field 'NQF Level' per module."
+    },
+    {
+      "id": "F5",
+      "statement": "Each module is decomposed into weighted 'Knowledge Topics' (KT) whose percentages are intended to sum to 100% of that module's internal weighting.",
+      "evidence": "'SECTION N: KM-xx-KTyy: <title> <weight>%' headers repeated throughout every module body."
+    },
+    {
+      "id": "F6",
+      "statement": "The qualification uses continuous, portfolio-of-evidence style assessment (self-assessments, activities and exercises signed off by a facilitator) rather than a single formal written exam, as described in each module's 'Assessments' front-matter section.",
+      "evidence": "Recurring 'Assessments' paragraph in module front matter (paraphrased, not quoted verbatim)."
+    },
+    {
+      "id": "F7",
+      "statement": "Assessors and moderators must be accredited by the MICT SETA; lecturer/learner ratio capped at 1:20.",
+      "evidence": "'Provider Accreditation Requirements' section, present in every module."
+    },
+    {
+      "id": "F8",
+      "statement": "Supplied slide decks (49 files) are condensed per-topic teaching slides for Module 6 only; they contain no assessment content.",
+      "evidence": "Manual + automated inspection of slides/slides km 06/*.pdf content and filenames."
+    }
+  ],
+  "inferences": [
+    {
+      "id": "I1",
+      "statement": "Because no formal written-exam instrument is supplied, the Mock EISA paper structure (sections, duration, mark totals, instructions) must be designed by implementation assumption, informed by the qualification's NQF levels, module credit weightings, and QCTO occupational-certificate conventions, rather than copied from a reference exam.",
+      "rationale": "assessment_instrument_findings shows zero hits for exam-duration/total-marks/instructions markers."
+    },
+    {
+      "id": "I2",
+      "statement": "Module credit weightings (Cr) are a reasonable basis for allocating relative marks/emphasis across a mock paper's sections, since the qualification itself uses credits as its measure of relative weight per module.",
+      "rationale": "Credits range from 1 (Module 12) to 16 (Module 6), mirroring the varying depth of each module's content."
+    },
+    {
+      "id": "I3",
+      "statement": "'Exit Level Outcomes' as a named, numbered artifact are not present in the supplied material; each module's KT list plus its 'Purpose' paragraph is the closest available proxy for outcome-style statements and should be used as the outcome-coverage basis for the blueprint.",
+      "rationale": "No literal 'Exit Level Outcome' or 'ELO' text found anywhere in the corpus (see unknowns)."
+    },
+    {
+      "id": "I4",
+      "statement": "Software-development-specific modules (KM-05 through KM-09) are the most relevant to a Software Developer Mock EISA paper; governance/4IR/design-thinking modules (KM-10, KM-11, KM-12) are better suited to short integrated context questions than full sections.",
+      "rationale": "KM-05/06/07/08/09 cover programming, OOP, HTML/CSS/JS, UML, and databases/SDLC/algorithms directly."
+    }
+  ],
+  "unknowns": [
+    {
+      "id": "U1",
+      "item": "Numbered/named Exit Level Outcomes (ELOs) for the qualification."
+    },
+    {
+      "id": "U2",
+      "item": "Official examination structure (number of sections, papers, weighting per section)."
+    },
+    {
+      "id": "U3",
+      "item": "Official examination duration."
+    },
+    {
+      "id": "U4",
+      "item": "Official total mark count for a summative/EISA paper."
+    },
+    {
+      "id": "U5",
+      "item": "Official candidate instructions wording."
+    },
+    {
+      "id": "U6",
+      "item": "Official marking memo format/template."
+    },
+    {
+      "id": "U7",
+      "item": "Pass mark / competency threshold."
+    },
+    {
+      "id": "U8",
+      "item": "Whether the real EISA is a single integrated paper or multiple papers per knowledge module cluster."
+    },
+    {
+      "id": "U9",
+      "item": "Content of Module 1 (KM-01) - not included in the supplied files."
+    },
+    {
+      "id": "U10",
+      "item": "Content of the 'slides km 08' folder - present but empty in the supplied files."
+    }
+  ],
+  "anomalies": [
+    {
+      "id": "A1",
+      "statement": "Module number(s) [1] were not supplied (numbering starts at Module 2)."
+    },
+    {
+      "id": "A2",
+      "statement": "Slide folder(s) present but empty: ['slides/slides km 08']."
+    },
+    {
+      "id": "A-12-weight",
+      "statement": "12: knowledge topic(s) ['KM-12-KT01'] have no stated weight percentage in their section header (module KT weight sum from stated values only: 85.0%)."
+    }
+  ]
+}

@@ -14,7 +14,7 @@ from src.generation.llm_utils import (
     call_provider_with_retry,
     extract_json,
 )
-from src.providers.base import LLMProvider, LLMProviderError
+from src.providers.base import LLMProvider, LLMProviderError, is_retryable_status
 from src.security.config import SecurityConfig
 
 
@@ -53,6 +53,23 @@ class _RaisesGenerationErrorProvider(LLMProvider):
         raise GenerationError("deterministic content defect - retrying would not help")
 
 
+class _RaisesPermanentProviderErrorProvider(LLMProvider):
+    """Simulates a real provider that classified its own exception as
+    non-retryable (see src/providers/groq_provider.py and
+    anthropic_provider.py's status-code classification) - e.g. a 401 bad
+    API key. Every attempt would fail identically; call_provider_with_retry
+    must stop after the FIRST attempt, not burn the full retry budget."""
+
+    name = "permanent-failure"
+
+    def __init__(self):
+        self.call_count = 0
+
+    def generate(self, system_prompt, user_prompt, task):
+        self.call_count += 1
+        raise LLMProviderError("simulated permanent failure (e.g. bad API key)", retryable=False)
+
+
 def test_retry_terminates_safely_after_max_attempts_and_reraises():
     provider = _AlwaysFailsProvider()
     config = SecurityConfig(generation_max_retries=3, generation_retry_backoff_seconds=0.0)
@@ -88,6 +105,35 @@ def test_retry_count_of_one_means_no_retries():
     with pytest.raises(LLMProviderError):
         call_provider_with_retry(provider, "sys", "user", {}, security_config=config)
     assert provider.call_count == 1
+
+
+def test_a_permanent_provider_error_is_not_retried_even_with_budget_remaining():
+    """Regression test: a 401/403-shaped (or any explicitly non-retryable)
+    provider failure must stop after the first attempt, not loop through
+    the full generation_max_retries budget on a foregone conclusion - see
+    src/providers/base.py's LLMProviderError.retryable."""
+    provider = _RaisesPermanentProviderErrorProvider()
+    config = SecurityConfig(generation_max_retries=5, generation_retry_backoff_seconds=0.0)
+    with pytest.raises(LLMProviderError, match="permanent failure"):
+        call_provider_with_retry(provider, "sys", "user", {}, security_config=config)
+    assert provider.call_count == 1  # NOT 5 - no pointless retries
+
+
+def test_is_retryable_status_rejects_known_permanent_client_errors():
+    for status in (400, 401, 403, 404, 422):
+        assert is_retryable_status(status) is False
+
+
+def test_is_retryable_status_allows_rate_limit_and_server_errors():
+    for status in (429, 500, 502, 503, 504):
+        assert is_retryable_status(status) is True
+
+
+def test_is_retryable_status_defaults_true_when_no_status_is_available():
+    """A network error/timeout carries no HTTP status at all - the
+    conservative default is retryable, never assume permanence without
+    positive evidence."""
+    assert is_retryable_status(None) is True
 
 
 def test_oversized_provider_response_is_rejected_before_parsing():

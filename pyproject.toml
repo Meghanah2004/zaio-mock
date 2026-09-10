@@ -3,7 +3,21 @@ name = "zaio-mock-eisa"
 version = "0.1.0"
 description = "Phase 1 Mock EISA generation pipeline - Software Developer qualification"
 requires-python = ">=3.11"
+dependencies = [
+    "jsonschema>=4.26,<5",
+    "pypdf>=6.17,<7",
+    "python-docx>=1.2,<2",
+    "anthropic>=1.4,<2",
+    "google-genai>=2.0,<3",
+    "groq>=1.7,<2",
+    "reportlab>=5.0,<6",
+    "fastapi>=0.141,<1",
+    "uvicorn[standard]>=0.52,<1",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+
+[tool.vercel]
+entrypoint = "api.app:app"

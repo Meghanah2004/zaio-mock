@@ -105,23 +105,27 @@ Copy `.env.example` to `.env` and edit as needed (never commit `.env`):
 
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
-| `LLM_PROVIDER` | no | `mock` | `mock` (offline, deterministic) or `anthropic` (real API) |
-| `ANTHROPIC_API_KEY` | only if `LLM_PROVIDER=anthropic` | - | Anthropic API key. **Not** the same thing as a Claude Pro/Max subscription - see below. |
+| `LLM_PROVIDER` | no | `mock` | `mock` (offline, deterministic - always used by automated tests, regardless of this setting), `groq` (real API, current production provider), `anthropic` (real API), or `gemini` (real API) |
+| `GROQ_API_KEY` | only if `LLM_PROVIDER=groq` | - | Groq API key from https://console.groq.com/ |
+| `GROQ_MODEL` | no | `openai/gpt-oss-120b` | model id |
+| `ANTHROPIC_API_KEY` | only if `LLM_PROVIDER=anthropic` | - | Anthropic API key. **Not** the same thing as a Claude Pro/Max subscription - an API key is a separate, billed credential from https://console.anthropic.com/. |
 | `ANTHROPIC_MODEL` | no | `claude-sonnet-5` | model id |
+| `GEMINI_API_KEY` | only if `LLM_PROVIDER=gemini` | - | Gemini API key from https://aistudio.google.com/ |
+| `GEMINI_MODEL` | no | see `.env.example` | model id |
 | `LLM_MAX_TOKENS` | no | `4096` | per-call cap |
-| `LLM_TEMPERATURE` | no | `0.4` | per-call sampling temperature (kept for forward-compatibility; the installed Anthropic SDK version does not currently accept this as a `messages.create()` parameter - see `docs/SECURITY-AUDIT.md` 6.5) |
+| `LLM_TEMPERATURE` | no | `0.4` | per-call sampling temperature |
 
 `.env.example` also documents ~15 security-configuration variables (max
 file sizes/counts, retry limits, provider timeout, CLI numeric bounds, and
-prepared-for-the-future rate-limit settings) - all optional with safe
-defaults; see `src/security/config.py` and `docs/SECURITY-AUDIT.md` for
-what each one protects.
+rate-limit settings) - all optional with safe defaults; see
+`src/security/config.py` and `docs/SECURITY-AUDIT.md` for what each one
+protects.
 
-> **A Claude Pro/Max subscription (e.g. Claude Code, claude.ai) does not
-> provide an `ANTHROPIC_API_KEY`.** An API key is a separate, billed
-> credential from https://console.anthropic.com/. No such key is configured
-> in this environment, which is why every artifact under `output/` was
-> produced with `LLM_PROVIDER=mock` - see "Known limitations" below.
+Real generation with the configured provider has been exercised
+end-to-end (`output/mock-eisa-paper-01.*`/`-02.*` were produced by real
+Groq calls, `generation_meta.provider: "groq"`, not `MockProvider`) - see
+§16 "Known limitations" for the one real operational constraint this
+surfaced (Groq's daily token quota).
 
 ## 7. Installation
 
@@ -245,6 +249,13 @@ that "reads as copied." None of these alone is proof of originality; see
 `docs/DESIGN.md`, "Anti-copying approach and its limits," for exactly what
 the novelty checker does and does not catch.
 
+Generation is also retrieval-grounded: each question is generated against
+real, page-cited passages retrieved from `sdev/` (not just a topic name),
+checked for grounding at generation time and independently re-checked at
+`validate` time, and checked against every earlier paper's questions for
+the same section so a later paper cannot collapse into an earlier one. See
+`docs/DESIGN_NOTE.md` for the full mechanism with a real worked example.
+
 ## 15. Reproducibility
 
 `configs/software_developer.json` is the only place assessment structure
@@ -265,19 +276,27 @@ Anthropic provider (no code change, only `.env`).
 
 ## 16. Known limitations
 
-- **No live LLM call was made for this submission.** No `ANTHROPIC_API_KEY`
-  is configured in this environment (a Claude subscription does not provide
-  one). `output/mock-eisa-paper-02.*` and `output/mock-eisa-memo-02.*` were
-  produced by `MockProvider` - a deterministic, offline, FIXTURE-based
-  provider (2 hand-written scenario variants per section, selected by
-  `seed % 2`), not a generation engine. It exists so the pipeline (schema
-  validation, marks, coverage, novelty, review, rendering) can be exercised
-  end-to-end without network access, and it should not be read as
-  equivalent to real LLM generation. Real generation calls whichever
-  provider `LLM_PROVIDER` configures - `AnthropicProvider` is implemented
-  and wired through `src/providers/factory.py`; set `LLM_PROVIDER=anthropic`
-  and `ANTHROPIC_API_KEY` to use it. See `docs/DESIGN.md` for exactly what
-  this means for "Paper 3" variety under each provider.
+- **Real generation is live.** `LLM_PROVIDER=groq` (model
+  `openai/gpt-oss-120b`) is the configured production provider - real Groq
+  calls have produced `output/mock-eisa-paper-01.*`/`-02.*` end-to-end
+  (question RAG, answer RAG, grounding, marks, coverage, novelty, review,
+  rendering all against real model output, not fixtures); their
+  `generation_meta.provider` is `"groq"`, never `"mock"`.
+  `AnthropicProvider` and `GeminiProvider` are also implemented and wired
+  through `src/providers/factory.py` (set `LLM_PROVIDER=anthropic` /
+  `gemini` plus the matching API key to use either instead). `MockProvider`
+  remains the deterministic, offline, FIXTURE-based provider (2
+  hand-written scenario variants per section, selected by `seed % 2`) used
+  by every automated test (`tests/conftest.py` forces it regardless of
+  `.env`) and by any developer without a configured key - it is not a
+  generation engine and is never used for a real paper.
+  **Known real-provider constraint**: Groq's free tier enforces a daily
+  token quota (observed limit: 200,000 tokens/day); once exhausted,
+  `/api/generate` fails safely with a 502 and a generic message (never a
+  raw provider error) while the full diagnostic detail, including the
+  quota reset ETA Groq reports, is logged server-side only (see
+  `api/errors.py`) - this is an external quota limit, not a bug, and
+  resolves automatically when the quota resets.
 - **No official QCTO assessment specification was supplied.** Exam
   duration, total marks, section count, pass mark, and candidate
   instructions are Phase 1 implementation assumptions
@@ -309,16 +328,31 @@ uvicorn api.app:app --reload
 curl http://127.0.0.1:8000/api/health
 curl -X POST http://127.0.0.1:8000/api/generate \
   -H "Content-Type: application/json" \
-  -d '{"qualification": "software_developer", "paper_number": 2, "seed": 20260906, "pdf": true}'
-curl http://127.0.0.1:8000/api/results/2
-curl http://127.0.0.1:8000/api/results/2/paper.pdf -o paper.pdf
+  -d '{"qualification": "software_developer", "paper_number": 900, "seed": 20260906, "pdf": true}'
+curl http://127.0.0.1:8000/api/results/900
+curl http://127.0.0.1:8000/api/results/900/paper.pdf -o paper.pdf
 ```
+
+Use a high `paper_number` (900+) for ad-hoc/manual testing like the example
+above - `paper_number` doubles as the output filename and cross-paper
+novelty history key (`mock-eisa-paper-<NN>.json`,
+`artifacts/generation-history.json`), so a low number here would overwrite
+a real canonical paper and pollute its novelty history; see
+`tests/test_api_generate.py`'s module docstring for the same convention
+applied to the automated test suite.
+
+`localhost` vs `127.0.0.1`: if another local process is also bound to port
+8000 on this machine (a real, observed situation - see
+`frontend/.env.example`'s note on this), `http://localhost:8000` can
+resolve to the WRONG server depending on IPv4/IPv6 resolution order. Prefer
+`127.0.0.1` explicitly, as the examples above do, when in doubt.
 
 The CLI is unaffected and continues to work exactly as before - the API
 is an additional way to drive the same engine, not a replacement for it.
-`tests/test_api_*.py` (43 tests) cover the API layer independently of the
-125 tests covering the engine; run the whole suite with
-`python -m pytest tests/ -v` as before.
+`tests/test_api_*.py` covers the API layer independently of the rest of
+the engine's tests; run the whole suite with `python -m pytest tests/ -v`
+as before (see `docs/API.md` for current counts - not repeated here to
+avoid this README going stale every time a test is added).
 
 ## 18. Frontend (Phase 3)
 
@@ -330,7 +364,7 @@ full setup). Quick start (with the API already running per §17):
 ```bash
 cd frontend
 npm install
-cp .env.example .env.local   # sets VITE_API_BASE_URL, defaults to http://localhost:8000
+cp .env.example .env.local   # sets VITE_API_BASE_URL, defaults to http://127.0.0.1:8000
 npm run dev                  # http://localhost:5173
 ```
 
@@ -341,3 +375,13 @@ the four `/api/*` endpoints in §17, nothing else. `npm run test` runs its
 Vitest suite (component + service-layer tests, including error-path
 coverage for validation/rate-limit/server/network failures); `npm run
 build` produces a static `dist/` bundle.
+
+## 19. Deployment
+
+Local development runs the backend and frontend as two separate processes
+(§17-18 above); deploying either beyond your own machine is a separate
+concern with its own requirements (environment variables, the `sdev/`
+corpus's availability to the deployed backend, persistent storage for
+generated results, CORS, request timeouts for real-provider generation) -
+see **[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)** for the full
+architecture and a from-repo-root `Dockerfile` for the backend.
