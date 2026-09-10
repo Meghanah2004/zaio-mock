@@ -154,6 +154,20 @@ Set in the Vercel dashboard, never in `vercel.json` or committed code:
 | `GROQ_MODEL` | `openai/gpt-oss-120b` |
 | `REQUIRE_REAL_PROVIDER` | `true` - makes a missing/misconfigured key a hard failure instead of a silent MockProvider fallback (see `src/providers/factory.py`) |
 
+**A real, observed incident this caused**: adding/changing these variables in the
+Vercel dashboard does NOT retroactively apply to an already-running
+deployment - per Vercel's own documentation, "any change you make to
+environment variables are not applied to previous deployments, they only
+apply to new deployments." Setting `LLM_PROVIDER=groq` after a deployment
+was already live left that deployment still resolving `LLM_PROVIDER` as
+unset (`LLMSettings` defaulting to `"mock"` - see `src/config.py`) until a
+genuinely new deployment was built and promoted. After changing any
+Production environment variable here, trigger a new deployment (a fresh
+commit to `main`, or an explicit redeploy) and confirm via `vercel inspect
+<url>` that its deployment `id` differs from whatever was live before -
+the dashboard showing the "correct" value is not evidence a currently-
+running deployment is using it.
+
 `CORS_ALLOWED_ORIGINS` is not needed for the single-project Services
 topology above (same-origin); set it only if the frontend and backend are
 later split into two separate Vercel projects.
