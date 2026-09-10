@@ -201,3 +201,71 @@ def resolve_readable_artifact(filename: str) -> Path:
     if static_path.exists():
         return static_path
     return runtime_path
+
+
+# -- Effective seed derivation (per-paper evidence-rotation diversity) ------
+SEED_PAPER_STRIDE = 2_147_483_647
+"""2^31 - 1 (a Mersenne prime, and the same value as SecurityConfig.max_seed
+- one full seed-space width). Multiplying paper_number by this gives every
+paper_number its own non-overlapping block of the effective-seed space: for
+any raw seed within its valid [min_seed, max_seed] range, no two distinct
+paper_numbers can ever produce the same effective_seed. Primality is a
+second, independent safeguard - it avoids introducing unwanted periodicity
+into the small `% len(...)` rotations effective_seed later feeds (see
+src/retrieval/evidence_selector.py's `rotation = seed % len(structural)`
+and src/providers/mock_provider.py's `bank[seed % len(bank)]`), where a
+composite stride sharing a small common factor with a small rotation base
+could otherwise make two different paper_numbers land on the same rotation
+by coincidence more often than chance alone would predict."""
+
+
+def compute_effective_seed(seed: int, paper_number: int) -> int:
+    """Combines a caller-supplied ``seed`` with ``paper_number`` into the
+    ONE seed value used for every seed-dependent step of a generation run:
+    question-side evidence rotation, answer-side evidence rotation, and the
+    provider task seed. This is the fix for a real, observed production
+    incident: src/cli.py's ``--seed`` default and frontend/src/components/
+    GenerateForm.tsx's seed field default were both the same static literal
+    (20260906), and NOTHING before this function ever combined ``seed``
+    with ``paper_number`` - every generation's evidence retrieval
+    (evidence_selector.py: ``rotation = seed % len(structural)``) depended
+    on ``seed`` ALONE. A caller who generated Paper 1 and Paper 2 without
+    manually picking a different seed each time therefore retrieved
+    IDENTICAL evidence for both, and since no real provider (Groq/
+    Anthropic/Gemini - confirmed directly, none of the three provider
+    modules ever sends ``seed`` to the actual API call) uses ``seed`` for
+    its own sampling either, a low-temperature real model given the same
+    evidence and the same prompt on attempt 1 frequently reproduced
+    near-identical or literally duplicate content - surfacing as frequent
+    cross-paper novelty rejections, and, when accepted, still frequently
+    near-duplicate. The existing within-paper retry diversification
+    (question_generator.py's ``seed + attempt - 1`` across up to
+    ``grounding_max_retries`` attempts) only ever varied a SMALL window
+    around one already-collided starting point; it could not fix a
+    collision that starts at the very first attempt of every paper.
+
+    This function is the ONE centralized place that combination happens -
+    every caller (api/service.py, src/cli.py) computes it ONCE per
+    generation request and threads the RESULT through everywhere ``seed``
+    was previously used directly (question-side evidence retrieval,
+    generate_paper, generate_memo, and - inside generate_memo - answer-side
+    evidence retrieval); nothing downstream computes its own variant of
+    this combination, so there is exactly one formula to reason about.
+
+    Explicitly NOT a knowledge source: this is pure integer arithmetic on
+    two caller-supplied numbers. ``paper_number`` never becomes part of any
+    prompt, evidence passage, or generated content here - it only changes
+    WHICH already-real, already-page-cited learner-guide passages get
+    selected (see evidence_selector.py), never WHAT the passages say. The
+    supplied learner-guide PDFs remain the only knowledge source; previously
+    generated papers remain usable only for cross-paper novelty comparison
+    (src/validation/cross_paper_novelty.py), never as input to this
+    function or to anything this function's output feeds into.
+
+    Reproducibility is preserved, not weakened: this is a pure, deterministic
+    function of its two integer inputs - the SAME (seed, paper_number) pair
+    always produces the SAME effective_seed, and therefore the SAME
+    retrieval conditions, exactly as before. What changes is that two
+    DIFFERENT paper_numbers sharing the same raw seed no longer collide.
+    """
+    return seed + paper_number * SEED_PAPER_STRIDE

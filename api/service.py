@@ -23,6 +23,7 @@ from src.config import (
     RUNTIME_ARTIFACTS_DIR,
     SDEV_DIR,
     LLMSettings,
+    compute_effective_seed,
     ensure_output_dirs,
     load_qualification_config,
     resolve_readable_artifact,
@@ -177,9 +178,28 @@ def generate_paper_and_memo(qualification: str, paper_number: int, seed: int, wa
     button must invoke the actual, fully-grounded generation pipeline,"
     not a frontend change; the frontend already called this function
     correctly, this function just wasn't doing real RAG.
+
+    REWORK (repeated-questions incident): ``seed`` alone used to drive
+    every seed-dependent step below (question-side evidence rotation,
+    answer-side evidence rotation, the provider task seed) with no
+    dependence on ``paper_number`` at all - and both real entry points'
+    seed DEFAULTS (src/cli.py's ``--seed``, frontend/src/components/
+    GenerateForm.tsx's seed field) were the same static literal, so a
+    caller generating Paper 1 then Paper 2 without manually picking a new
+    seed retrieved IDENTICAL evidence for both, which a real low-
+    temperature provider frequently turned into near-identical or
+    literally duplicate questions - see src.config.compute_effective_seed's
+    docstring for the full root-cause analysis. Fixed here, once, by
+    computing ``effective_seed`` immediately below and threading THAT
+    (never the raw ``seed``) through every call that used to receive
+    ``seed`` directly. ``paper_number`` never becomes prompt/evidence
+    content anywhere downstream of this - it only changes WHICH real,
+    page-cited learner-guide passages get selected, never what they say.
     """
     ensure_output_dirs()
     ensure_reference_analysis_ready()
+
+    effective_seed = compute_effective_seed(seed, paper_number)
 
     reference_analysis = load_json_file(_REFERENCE_ANALYSIS_PATH)
     qual_config = load_qualification_config(qualification)
@@ -194,14 +214,14 @@ def generate_paper_and_memo(qualification: str, paper_number: int, seed: int, wa
 
     retrieval_index, corpus_chunks = load_retrieval_index(_CORPUS_CHUNKS_PATH)
     evidence_by_section = build_evidence_by_section(
-        blueprint_dict, retrieval_index, corpus_chunks, security_config, seed
+        blueprint_dict, retrieval_index, corpus_chunks, security_config, effective_seed
     )
     generation_history = load_history(_GENERATION_HISTORY_PATH)
 
     paper = generate_paper(
         blueprint_dict,
         provider,
-        seed,
+        effective_seed,
         evidence_by_section=evidence_by_section,
         generation_history=generation_history,
         security_config=security_config,
@@ -209,7 +229,7 @@ def generate_paper_and_memo(qualification: str, paper_number: int, seed: int, wa
     memo = generate_memo(
         paper,
         provider,
-        seed,
+        effective_seed,
         security_config=security_config,
         retrieval_index=retrieval_index,
         corpus_chunks=corpus_chunks,

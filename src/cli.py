@@ -31,6 +31,7 @@ from src.config import (
     PROJECT_ROOT,
     SDEV_DIR,
     LLMSettings,
+    compute_effective_seed,
     ensure_output_dirs,
     load_qualification_config,
     safe_path_within,
@@ -133,11 +134,21 @@ def cmd_generate(args: argparse.Namespace) -> int:
 
     blueprint_dict = blueprint.to_json_dict()
 
+    # Combines the raw --seed with --paper-number into the ONE seed value
+    # used for every seed-dependent step below (question-side and
+    # answer-side evidence rotation, the provider task seed) - never the
+    # raw seed directly. See src.config.compute_effective_seed's docstring:
+    # --seed's own default is a static literal, so without this, a caller
+    # generating paper 2 without overriding --seed retrieves IDENTICAL
+    # evidence to whatever paper last used that same default, which a real
+    # provider frequently turns into near-duplicate questions.
+    effective_seed = compute_effective_seed(args.seed, args.paper_number)
+
     corpus_chunks_path = ARTIFACTS_DIR / "reference-corpus-chunks.json"
     try:
         retrieval_index, corpus_chunks = load_retrieval_index(corpus_chunks_path)
         evidence_by_section = build_evidence_by_section(
-            blueprint_dict, retrieval_index, corpus_chunks, security_config, args.seed
+            blueprint_dict, retrieval_index, corpus_chunks, security_config, effective_seed
         )
     except FileNotFoundError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
@@ -155,7 +166,7 @@ def cmd_generate(args: argparse.Namespace) -> int:
         paper = generate_paper(
             blueprint_dict,
             provider,
-            args.seed,
+            effective_seed,
             evidence_by_section=evidence_by_section,
             generation_history=generation_history,
             security_config=security_config,
@@ -163,7 +174,7 @@ def cmd_generate(args: argparse.Namespace) -> int:
         memo = generate_memo(
             paper,
             provider,
-            args.seed,
+            effective_seed,
             security_config=security_config,
             retrieval_index=retrieval_index,
             corpus_chunks=corpus_chunks,

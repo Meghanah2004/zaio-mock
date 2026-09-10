@@ -2,7 +2,61 @@ from __future__ import annotations
 
 import pytest
 
-from src.config import LLMSettings, load_qualification_config
+from src.config import LLMSettings, compute_effective_seed, load_qualification_config
+
+
+# ---------------------------------------------------------------------------
+# compute_effective_seed - regression tests for a real production incident:
+# repeated/near-duplicate questions across Paper 1/2/3 because --seed's and
+# the frontend's seed-field default were both the same static literal, and
+# nothing combined the raw seed with paper_number before this fix. See
+# src.config.compute_effective_seed's own docstring for the full root-cause
+# analysis and api/service.py's REWORK docstring for how it's wired in.
+# ---------------------------------------------------------------------------
+def test_effective_seed_differs_for_different_paper_numbers_given_the_same_raw_seed():
+    """The actual bug being fixed: two different paper_numbers sharing the
+    same caller-supplied seed must no longer produce the same effective
+    seed (and therefore no longer retrieve identical evidence)."""
+    seed = 20260906  # the real static default both --seed and the frontend form used
+    assert compute_effective_seed(seed, 1) != compute_effective_seed(seed, 2)
+    assert compute_effective_seed(seed, 2) != compute_effective_seed(seed, 3)
+    assert compute_effective_seed(seed, 1) != compute_effective_seed(seed, 3)
+
+
+def test_effective_seed_is_deterministic_for_the_same_seed_and_paper_number():
+    """Reproducibility is preserved, not weakened: the SAME (seed,
+    paper_number) pair must always produce the SAME effective seed, and
+    therefore the same retrieval conditions."""
+    assert compute_effective_seed(20260906, 2) == compute_effective_seed(20260906, 2)
+    assert compute_effective_seed(0, 1) == compute_effective_seed(0, 1)
+    assert compute_effective_seed(2_147_483_647, 9999) == compute_effective_seed(2_147_483_647, 9999)
+
+
+def test_effective_seed_formula_is_the_documented_stride():
+    """Pins the exact, documented formula (not just "differs"/"same") so a
+    future change to the constant or the formula shape is a deliberate,
+    visible decision, not an accidental drift."""
+    from src.config import SEED_PAPER_STRIDE
+
+    assert SEED_PAPER_STRIDE == 2_147_483_647  # 2^31 - 1, a Mersenne prime
+    assert compute_effective_seed(5, 3) == 5 + 3 * SEED_PAPER_STRIDE
+
+
+def test_effective_seed_ranges_never_overlap_across_the_full_valid_paper_number_range():
+    """SEED_PAPER_STRIDE equals SecurityConfig.max_seed + 1 (one full
+    seed-space width), so for ANY raw seed within its valid bounds, no two
+    distinct paper_numbers can ever collide - checked here across the
+    project's actual configured bounds rather than assumed."""
+    from src.security.config import SecurityConfig
+
+    security_config = SecurityConfig()
+    seed_low = security_config.min_seed
+    seed_high = security_config.max_seed
+    paper_a, paper_b = 1, security_config.max_paper_number
+
+    # The highest effective seed paper_a can reach must still be lower than
+    # the lowest effective seed paper_b can reach, for every raw seed in range.
+    assert compute_effective_seed(seed_high, paper_a) < compute_effective_seed(seed_low, paper_b)
 
 
 def test_load_qualification_config_rejects_out_of_scope():

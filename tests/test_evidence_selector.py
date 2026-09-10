@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from src.config import compute_effective_seed
 from src.retrieval.evidence_selector import select_answer_evidence, select_evidence
 from src.security.config import SecurityConfig
 from src.validation.novelty_checker import ReferenceCorpusIndex
@@ -130,6 +131,48 @@ def test_select_evidence_different_seeds_can_surface_different_passages():
     assert ev_a and ev_b
     assert ev_a[0]["page"] in {62, 63}
     assert ev_b[0]["page"] in {62, 63}
+
+
+def test_paper_1_and_paper_2_get_different_evidence_rotations_for_the_same_raw_seed():
+    """Regression test for the real repeated-questions production incident:
+    with the OLD behavior (raw seed used directly, no paper_number
+    involved), Paper 1 and Paper 2 generated with the same caller-supplied
+    seed retrieved IDENTICAL evidence, which a real low-temperature
+    provider frequently turned into near-duplicate questions. This proves
+    the fix at the retrieval layer: routing the SAME raw seed through
+    src.config.compute_effective_seed for two different paper_numbers
+    produces a different rotation - src.retrieval.evidence_selector's
+    `rotation = seed % len(structural)` - and therefore a different top
+    evidence passage, for a section with more than one real candidate
+    passage for a topic (KM-06-KT06 has exactly 2 here: pages 62 and 63).
+    SEED_PAPER_STRIDE is odd (2^31 - 1), so adding it once always flips
+    parity relative to not adding it - guaranteeing a different rotation
+    index for this 2-item pool between consecutive paper numbers, not just
+    "usually different"."""
+    chunks = _chunks()
+    security_config = SecurityConfig(evidence_passages_per_section=1)
+    raw_seed = 20260906  # the real static default both --seed and the frontend form used
+
+    def _top_page(paper_number: int) -> int:
+        effective_seed = compute_effective_seed(raw_seed, paper_number)
+        evidence = select_evidence(
+            _index(chunks),
+            chunks,
+            required_outcomes=["KM-06-KT06"],
+            outcome_title_map={"KM-06-KT06": "HTML5"},
+            occupational_context="Front-end developer building a form.",
+            seed=effective_seed,
+            security_config=security_config,
+        )
+        assert evidence
+        return evidence[0]["page"]
+
+    paper_1_top_page = _top_page(paper_number=1)
+    paper_2_top_page = _top_page(paper_number=2)
+
+    assert paper_1_top_page in {62, 63}
+    assert paper_2_top_page in {62, 63}
+    assert paper_1_top_page != paper_2_top_page
 
 
 # ---------------------------------------------------------------------------

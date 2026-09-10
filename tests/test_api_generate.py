@@ -16,6 +16,9 @@ src/validation/novelty_checker.py's own docstring.
 """
 from __future__ import annotations
 
+import threading
+import time
+
 from fastapi.testclient import TestClient
 
 from api.app import app
@@ -150,3 +153,67 @@ def test_error_response_never_contains_a_traceback_or_filesystem_path():
     assert "traceback" not in text
     assert "/users/" not in text
     assert "site-packages" not in text
+
+
+def test_health_endpoint_stays_responsive_during_an_in_flight_generation(monkeypatch):
+    """Regression test for a real event-loop-blocking defect found in the
+    final audit: POST /api/generate used to be declared `async def` while
+    calling fully synchronous, blocking generation work (real file I/O,
+    and - with a real provider configured - blocking HTTP calls, since
+    none of Groq/Anthropic/Gemini's provider modules uses an async
+    client) directly, with no `await`/threadpool dispatch. That blocks the
+    ENTIRE asyncio event loop for the whole call - which docs/API.md
+    already documents as taking anywhere from a few seconds to several
+    minutes with a real provider - stalling every OTHER request sharing
+    the same worker, GET /api/health included: exactly what a platform/
+    orchestrator polls to decide whether an instance is still alive.
+
+    Fixed by declaring the route a plain `def` (api/routes/generate.py) -
+    FastAPI automatically dispatches a `def` path operation to an external
+    threadpool, so blocking work there no longer blocks the event loop
+    other requests share. This test proves the fix directly: while a
+    (stubbed, artificially slow) generation is in flight, a concurrent
+    health check must still return promptly, not queue behind it.
+    """
+    import api.routes.generate as generate_route
+
+    def slow_generate_paper_and_memo(qualification, paper_number, seed, want_pdf):
+        time.sleep(1.0)
+        raise RuntimeError("test stub - intentionally never produces a real result")
+
+    monkeypatch.setattr(generate_route, "generate_paper_and_memo", slow_generate_paper_and_memo)
+
+    # raise_server_exceptions=False: the stub deliberately raises so this
+    # test never depends on real generation succeeding - TestClient's
+    # default behavior re-raises an unhandled exception in the calling
+    # thread for debugging convenience, which here is a background thread
+    # pytest would otherwise report as an unhandled thread exception (see
+    # tests/test_api_security.py::test_unexpected_internal_error_never_
+    # leaks_details for the same, already-established pattern).
+    with TestClient(app, raise_server_exceptions=False) as client:
+        generate_done = threading.Event()
+
+        def run_slow_generate():
+            client.post(
+                "/api/generate",
+                json={"qualification": "software_developer", "paper_number": 906, "seed": 1, "pdf": False},
+            )
+            generate_done.set()
+
+        thread = threading.Thread(target=run_slow_generate)
+        thread.start()
+        time.sleep(0.2)  # let the generate request actually start and enter the sleep
+
+        assert not generate_done.is_set(), "the slow generate call finished too early for this test to be meaningful"
+
+        health_start = time.monotonic()
+        health_response = client.get("/api/health")
+        health_duration = time.monotonic() - health_start
+
+        thread.join(timeout=5)
+
+    assert health_response.status_code == 200
+    # The health check must complete well before the 1s slow generation
+    # does - if the event loop were still blocked, it would have had to
+    # wait out the remaining sleep first.
+    assert health_duration < 0.5
