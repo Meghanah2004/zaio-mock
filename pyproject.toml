@@ -10,6 +10,7 @@ dependencies = [
     "anthropic>=1.4,<2",
     "google-genai>=2.0,<3",
     "groq>=1.7,<2",
+    "httpx>=0.28,<1",
     "reportlab>=5.0,<6",
     "fastapi>=0.141,<1",
     "uvicorn[standard]>=0.52,<1",

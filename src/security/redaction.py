@@ -23,7 +23,8 @@ from src.config import PROJECT_ROOT
 
 _SECRET_PATTERNS = [
     re.compile(r"sk-ant-[A-Za-z0-9_-]{10,}"),  # Anthropic-style key
-    re.compile(r"sk-[A-Za-z0-9_-]{20,}"),  # generic OpenAI-style key
+    re.compile(r"sk-or-v1-[A-Za-z0-9_-]{10,}"),  # OpenRouter API key (distinctive prefix)
+    re.compile(r"sk-[A-Za-z0-9_-]{20,}"),  # generic OpenAI-style key - also matches sk-or-v1-... as a fallback
     re.compile(r"AIza[A-Za-z0-9_-]{35}"),  # Google/Gemini API key (fixed-length, distinctive prefix)
     re.compile(r"gsk_[A-Za-z0-9]{20,}"),  # Groq API key (distinctive prefix)
     re.compile(r"ghp_[A-Za-z0-9]{20,}"),  # GitHub personal access token

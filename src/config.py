@@ -79,7 +79,7 @@ def _load_dotenv_if_present() -> None:
 _load_dotenv_if_present()
 
 
-_REAL_PROVIDERS = ("anthropic", "gemini", "groq")
+_REAL_PROVIDERS = ("anthropic", "gemini", "groq", "openrouter")
 """Providers backed by a real, billable API - as opposed to "mock". Used by
 LLMSettings' provider-aware defaults below and by has_real_credentials()."""
 
@@ -98,6 +98,13 @@ def _default_model() -> str:
         return os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
     if provider == "groq":
         return os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
+    if provider == "openrouter":
+        # No hard-coded default model: OpenRouter routes to many different
+        # backend models under many different naming schemes (unlike the
+        # other three providers, there is no single obviously-right
+        # fallback) - OPENROUTER_MODEL is expected to always be set
+        # explicitly when LLM_PROVIDER=openrouter (see .env.example).
+        return os.environ.get("OPENROUTER_MODEL", "")
     return os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5")
 
 
@@ -107,6 +114,8 @@ def _default_api_key() -> str | None:
         return os.environ.get("GEMINI_API_KEY")
     if provider == "groq":
         return os.environ.get("GROQ_API_KEY")
+    if provider == "openrouter":
+        return os.environ.get("OPENROUTER_API_KEY")
     return os.environ.get("ANTHROPIC_API_KEY")
 
 

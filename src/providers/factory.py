@@ -30,6 +30,7 @@ _REAL_PROVIDER_ENV_VARS = {
     "anthropic": "ANTHROPIC_API_KEY",
     "gemini": "GEMINI_API_KEY",
     "groq": "GROQ_API_KEY",
+    "openrouter": "OPENROUTER_API_KEY",
 }
 
 
@@ -41,14 +42,15 @@ def build_provider(settings: LLMSettings, security_config: SecurityConfig | None
             raise LLMProviderError(
                 "REQUIRE_REAL_PROVIDER is set but LLM_PROVIDER is 'mock' (or was left unset) - "
                 "refusing to start/serve a request with fake fixture content in a deployment that "
-                "requires real generation. Set LLM_PROVIDER=groq (or anthropic/gemini) and its "
-                "matching API key."
+                "requires real generation. Set LLM_PROVIDER=groq (or anthropic/gemini/openrouter) and "
+                "its matching API key."
             )
         return MockProvider()
 
     if settings.provider not in _REAL_PROVIDER_ENV_VARS:
         raise ValueError(
-            f"Unknown LLM_PROVIDER: {settings.provider!r}. Supported: 'mock', 'anthropic', 'gemini', 'groq'."
+            f"Unknown LLM_PROVIDER: {settings.provider!r}. "
+            "Supported: 'mock', 'anthropic', 'gemini', 'groq', 'openrouter'."
         )
 
     env_var = _REAL_PROVIDER_ENV_VARS[settings.provider]
@@ -75,6 +77,10 @@ def build_provider(settings: LLMSettings, security_config: SecurityConfig | None
         from src.providers.gemini_provider import GeminiProvider
 
         return GeminiProvider(settings)
-    from src.providers.groq_provider import GroqProvider
+    if settings.provider == "groq":
+        from src.providers.groq_provider import GroqProvider
 
-    return GroqProvider(settings)
+        return GroqProvider(settings)
+    from src.providers.openrouter_provider import OpenRouterProvider
+
+    return OpenRouterProvider(settings)

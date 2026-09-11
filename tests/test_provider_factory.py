@@ -44,6 +44,13 @@ def test_groq_without_api_key_falls_back_to_mock_with_a_warning(capsys):
     assert "GROQ_API_KEY is not set" in captured.err
 
 
+def test_openrouter_without_api_key_falls_back_to_mock_with_a_warning(capsys):
+    provider = build_provider(LLMSettings(provider="openrouter", api_key=None))
+    assert isinstance(provider, MockProvider)
+    captured = capsys.readouterr()
+    assert "OPENROUTER_API_KEY is not set" in captured.err
+
+
 def test_anthropic_with_api_key_builds_the_real_provider_class(monkeypatch):
     from unittest.mock import MagicMock
 
@@ -77,6 +84,19 @@ def test_groq_with_api_key_builds_the_real_provider_class(monkeypatch):
     assert provider.name == "groq"
 
 
+def test_openrouter_with_api_key_builds_the_real_provider_class(monkeypatch):
+    from unittest.mock import MagicMock
+
+    monkeypatch.setattr("httpx.Client", lambda **kwargs: MagicMock())
+    from src.providers.openrouter_provider import OpenRouterProvider
+
+    provider = build_provider(
+        LLMSettings(provider="openrouter", model="google/gemini-3.8-flash", api_key="sk-or-v1-fake0000000000000000")
+    )
+    assert isinstance(provider, OpenRouterProvider)
+    assert provider.name == "openrouter"
+
+
 def test_unknown_provider_raises_value_error_naming_all_supported_providers():
     with pytest.raises(ValueError, match="Unknown LLM_PROVIDER") as exc_info:
         build_provider(LLMSettings(provider="does-not-exist"))
@@ -85,6 +105,7 @@ def test_unknown_provider_raises_value_error_naming_all_supported_providers():
     assert "anthropic" in message
     assert "gemini" in message
     assert "groq" in message
+    assert "openrouter" in message
 
 
 # ---------------------------------------------------------------------------
@@ -122,6 +143,12 @@ def test_require_real_provider_rejects_a_missing_gemini_key():
     strict = SecurityConfig(require_real_provider=True)
     with pytest.raises(LLMProviderError, match="GEMINI_API_KEY is not set"):
         build_provider(LLMSettings(provider="gemini", api_key=None), strict)
+
+
+def test_require_real_provider_rejects_a_missing_openrouter_key():
+    strict = SecurityConfig(require_real_provider=True)
+    with pytest.raises(LLMProviderError, match="OPENROUTER_API_KEY is not set"):
+        build_provider(LLMSettings(provider="openrouter", api_key=None), strict)
 
 
 def test_require_real_provider_still_builds_the_real_provider_when_properly_configured(monkeypatch):

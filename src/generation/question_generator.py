@@ -475,7 +475,18 @@ def generate_paper(
                 "evidence": evidence,
             }
             raw = call_provider_with_retry(provider, system_prompt, user_prompt, task)
-            content = extract_json(raw)
+            try:
+                content = extract_json(raw)
+            except GenerationError as exc:
+                # Malformed JSON (e.g. an unescaped quote inside an embedded
+                # code sample corrupting the surrounding JSON string) is
+                # retry-eligible, same as the marks/outcome and grounding/
+                # novelty rejections below - the model gets another attempt
+                # with a note naming exactly what was wrong, rather than
+                # aborting the whole paper on one bad sample.
+                last_rejection_reason = str(exc)
+                last_novelty_brief = None
+                continue
 
             # NOTE: 'expected_response_type' is deliberately NOT required
             # here unconditionally - it is still always required on the

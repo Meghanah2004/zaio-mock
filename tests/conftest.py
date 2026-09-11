@@ -24,7 +24,7 @@ import os
 
 import pytest
 
-_REAL_PROVIDER_API_KEY_ENV_VARS = ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "GROQ_API_KEY")
+_REAL_PROVIDER_API_KEY_ENV_VARS = ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "GROQ_API_KEY", "OPENROUTER_API_KEY")
 
 
 def force_offline_test_environment() -> None:

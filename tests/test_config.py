@@ -121,6 +121,7 @@ def test_llm_settings_provider_selects_which_model_env_var_is_read(monkeypatch):
     monkeypatch.setenv("ANTHROPIC_MODEL", "claude-sonnet-5")
     monkeypatch.setenv("GEMINI_MODEL", "gemini-3.6-flash")
     monkeypatch.setenv("GROQ_MODEL", "openai/gpt-oss-120b")
+    monkeypatch.setenv("OPENROUTER_MODEL", "google/gemini-3.8-flash")
 
     monkeypatch.setenv("LLM_PROVIDER", "anthropic")
     assert LLMSettings().model == "claude-sonnet-5"
@@ -130,3 +131,36 @@ def test_llm_settings_provider_selects_which_model_env_var_is_read(monkeypatch):
 
     monkeypatch.setenv("LLM_PROVIDER", "groq")
     assert LLMSettings().model == "openai/gpt-oss-120b"
+
+    monkeypatch.setenv("LLM_PROVIDER", "openrouter")
+    assert LLMSettings().model == "google/gemini-3.8-flash"
+
+
+def test_llm_settings_openrouter_model_and_api_key_env_vars(monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "openrouter")
+    monkeypatch.setenv("OPENROUTER_MODEL", "google/gemini-3.8-flash")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-or-v1-fake0000000000000000000000000000000000000000")
+    settings = LLMSettings()
+    assert settings.model == "google/gemini-3.8-flash"
+    assert settings.api_key == "sk-or-v1-fake0000000000000000000000000000000000000000"
+
+
+def test_llm_settings_openrouter_has_no_hard_coded_default_model(monkeypatch):
+    """Unlike anthropic/gemini/groq, OpenRouter routes to too broad a model
+    catalog for one sensible fallback - OPENROUTER_MODEL is expected to
+    always be set explicitly (see .env.example)."""
+    monkeypatch.delenv("OPENROUTER_MODEL", raising=False)
+    monkeypatch.setenv("LLM_PROVIDER", "openrouter")
+    assert LLMSettings().model == ""
+
+
+def test_has_real_credentials_true_for_openrouter_with_a_key(monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "openrouter")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-or-v1-fake0000000000000000000000000000000000000000")
+    assert LLMSettings().has_real_credentials() is True
+
+
+def test_has_real_credentials_false_for_openrouter_without_a_key(monkeypatch):
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    monkeypatch.setenv("LLM_PROVIDER", "openrouter")
+    assert LLMSettings().has_real_credentials() is False

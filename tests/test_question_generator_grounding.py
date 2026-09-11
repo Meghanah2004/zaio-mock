@@ -708,3 +708,92 @@ def test_evidence_is_present_in_every_attempts_prompt_including_after_a_novelty_
     for prompt in provider.user_prompts:
         assert EVIDENCE_TEXT in prompt
         assert "Module 6-Learner Guide.pdf" in prompt
+
+
+# ---------------------------------------------------------------------------
+# Regression tests for a real OpenRouter/Gemini production failure: a memo
+# model_answer embedded JS code (e.g. console.log("...")) whose unescaped
+# inner double-quote corrupted the surrounding JSON string, and
+# extract_json's GenerationError ("Unterminated string starting at line
+# 118 column 23") was raised OUTSIDE the per-attempt retry try/except in
+# generate_paper, aborting the whole paper on one bad sample instead of
+# getting the same bounded retry every other rejection class already gets.
+# Fixed by moving extract_json inside the existing retry block - these
+# tests use a scripted fake provider (never a real API call) to prove
+# malformed JSON is now retried using the SAME grounding_max_retries budget
+# and REGENERATION NOTE mechanism, not a new/separate retry loop.
+# ---------------------------------------------------------------------------
+class ScriptedRawProvider(LLMProvider):
+    """Like ScriptedProvider, but returns each entry VERBATIM (not
+    json.dumps'd), so a test can inject deliberately malformed raw provider
+    text."""
+
+    name = "scripted-raw"
+
+    def __init__(self, responses: list[str]):
+        self._responses = responses
+        self.call_count = 0
+        self.user_prompts: list[str] = []
+
+    def generate(self, system_prompt: str, user_prompt: str, task: dict[str, Any]) -> str:
+        self.user_prompts.append(user_prompt)
+        content = self._responses[min(self.call_count, len(self._responses) - 1)]
+        self.call_count += 1
+        return content
+
+
+_MALFORMED_JSON_EMBEDDED_QUOTE = (
+    '{"type": "scenario_short_answer", "scenario": "Log output using console.log("ready") '
+    'inside a handler.", "question": "What is printed?", "expected_response_type": "short_answer", '
+    '"outcomes": ["KM-06-KT06"]}'
+)
+
+
+def test_malformed_json_on_first_attempt_is_retried_then_a_valid_response_succeeds():
+    valid_response = _question(GROUNDED_TEXT, "Which elements would you use and why?")
+    provider = ScriptedRawProvider([_MALFORMED_JSON_EMBEDDED_QUOTE, json.dumps(valid_response)])
+
+    paper = generate_paper(
+        _blueprint(),
+        provider,
+        seed=1,
+        evidence_by_section=_evidence_by_section(),
+        security_config=SecurityConfig(grounding_max_retries=3),
+    )
+
+    assert provider.call_count == 2
+    assert paper["sections"][0]["questions"][0]["scenario"] == GROUNDED_TEXT
+
+
+def test_malformed_json_retry_note_names_the_parse_failure():
+    valid_response = _question(GROUNDED_TEXT, "Which elements would you use and why?")
+    provider = ScriptedRawProvider([_MALFORMED_JSON_EMBEDDED_QUOTE, json.dumps(valid_response)])
+
+    generate_paper(
+        _blueprint(),
+        provider,
+        seed=1,
+        evidence_by_section=_evidence_by_section(),
+        security_config=SecurityConfig(grounding_max_retries=3),
+    )
+
+    assert len(provider.user_prompts) == 2
+    assert "REGENERATION NOTE" in provider.user_prompts[1]
+    assert "malformed JSON" in provider.user_prompts[1]
+
+
+def test_malformed_json_on_every_attempt_still_fails_loudly_within_the_retry_bound():
+    """The fix must not weaken the retry BOUND - persistent malformed JSON
+    still fails loudly after exhausting the configured attempts, never
+    retried indefinitely and never silently accepted."""
+    provider = ScriptedRawProvider([_MALFORMED_JSON_EMBEDDED_QUOTE])
+
+    with pytest.raises(GenerationError, match="exhausted 2 generation attempt"):
+        generate_paper(
+            _blueprint(),
+            provider,
+            seed=1,
+            evidence_by_section=_evidence_by_section(),
+            security_config=SecurityConfig(grounding_max_retries=2),
+        )
+    assert provider.call_count == 2

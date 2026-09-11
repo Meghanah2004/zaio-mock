@@ -718,3 +718,96 @@ def test_generated_memo_grounding_is_unaffected_by_prompt_deduplication():
     # was excluded from the prompt above.
     assert memo_question["grounding"][0]["document"] == "Module 9-Learner Guide.pdf"
     assert memo["generation_meta"]["answer_grounded"] is True
+
+
+# ---------------------------------------------------------------------------
+# Regression tests for a real OpenRouter/Gemini production failure: a memo
+# model_answer embedded JS code (e.g. console.log("...")) whose unescaped
+# inner double-quote corrupted the surrounding JSON string, and
+# extract_json's GenerationError ("Unterminated string starting at line
+# 118 column 23") was raised OUTSIDE _generate_memo_for_question's
+# per-attempt retry try/except, aborting the whole memo on one bad sample
+# instead of getting the same bounded retry a marks mismatch already gets.
+# Fixed by moving extract_json inside the existing retry block - these
+# tests use a scripted fake provider (never a real API call) to prove
+# malformed JSON is now retried using the SAME memo_max_retries budget and
+# REGENERATION NOTE mechanism, not a new/separate retry loop.
+# ---------------------------------------------------------------------------
+class ScriptedRawMemoProvider(LLMProvider):
+    """Like ScriptedMemoProvider, but returns each entry VERBATIM (not
+    json.dumps'd), so a test can inject deliberately malformed raw provider
+    text."""
+
+    name = "scripted-raw-memo"
+
+    def __init__(self, responses: list[str]):
+        self._responses = responses
+        self.call_count = 0
+        self.user_prompts: list[str] = []
+
+    def generate(self, system_prompt: str, user_prompt: str, task: dict[str, Any]) -> str:
+        self.user_prompts.append(user_prompt)
+        content = self._responses[min(self.call_count, len(self._responses) - 1)]
+        self.call_count += 1
+        return content
+
+
+_MALFORMED_MEMO_JSON_EMBEDDED_QUOTE = (
+    '{"question_id": "Q-A1", "total_marks": 10, '
+    '"model_answer": "Use console.log("done") to trace execution.", '
+    '"criteria": [{"description": "d", "marks": 10}], "accepted_alternatives": []}'
+)
+
+
+def _single_question_paper() -> dict[str, Any]:
+    single_question = {"id": "Q-A1", "section_id": "A", "marks": 10, "question": "Q?"}
+    return {
+        "paper_id": "test-paper",
+        "status_disclaimer": "MOCK / PRACTICE ASSESSMENT ONLY.",
+        "total_marks": 10,
+        "sections": [{"id": "A", "questions": [single_question]}],
+    }
+
+
+def test_malformed_memo_json_on_first_attempt_is_retried_then_a_valid_response_succeeds():
+    valid_response = {
+        "question_id": "Q-A1",
+        "total_marks": 10,
+        "model_answer": "x",
+        "criteria": [{"description": "d", "marks": 10}],
+        "accepted_alternatives": [],
+    }
+    provider = ScriptedRawMemoProvider([_MALFORMED_MEMO_JSON_EMBEDDED_QUOTE, json.dumps(valid_response)])
+
+    memo = generate_memo(_single_question_paper(), provider, seed=1, security_config=SecurityConfig(memo_max_retries=3))
+
+    assert provider.call_count == 2
+    assert memo["sections"][0]["questions"][0]["model_answer"] == "x"
+
+
+def test_malformed_memo_json_retry_note_names_the_parse_failure():
+    valid_response = {
+        "question_id": "Q-A1",
+        "total_marks": 10,
+        "model_answer": "x",
+        "criteria": [{"description": "d", "marks": 10}],
+        "accepted_alternatives": [],
+    }
+    provider = ScriptedRawMemoProvider([_MALFORMED_MEMO_JSON_EMBEDDED_QUOTE, json.dumps(valid_response)])
+
+    generate_memo(_single_question_paper(), provider, seed=1, security_config=SecurityConfig(memo_max_retries=3))
+
+    assert len(provider.user_prompts) == 2
+    assert "REGENERATION NOTE" in provider.user_prompts[1]
+    assert "malformed JSON" in provider.user_prompts[1]
+
+
+def test_malformed_memo_json_on_every_attempt_still_fails_loudly_within_the_retry_bound():
+    """The fix must not weaken the retry BOUND - persistent malformed JSON
+    still fails loudly after exhausting the configured attempts, never
+    retried indefinitely and never silently accepted."""
+    provider = ScriptedRawMemoProvider([_MALFORMED_MEMO_JSON_EMBEDDED_QUOTE])
+
+    with pytest.raises(GenerationError, match="exhausted 2 memo generation attempt"):
+        generate_memo(_single_question_paper(), provider, seed=1, security_config=SecurityConfig(memo_max_retries=2))
+    assert provider.call_count == 2

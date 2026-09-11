@@ -55,7 +55,8 @@ Hard constraints:
      value (including multi-line code samples in a model answer), escape
      every newline as \n, every tab as \t, and every other control
      character the same way - never place a literal line break or other
-     raw control character inside a string:
+     raw control character inside a string. Embedded code/HTML examples
+     must also have every literal double-quote character escaped as \":
      {
        "question_id": "<echo the given question id>",
        "total_marks": <int, must equal the question's marks>,

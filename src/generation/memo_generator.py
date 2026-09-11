@@ -312,10 +312,15 @@ def _generate_memo_for_question(
         system_prompt, user_prompt = _build_memo_prompt(question, evidence, retry_note)
         task = {"kind": "generate_memo_for_question", "question": question, "seed": seed + attempt - 1, "answer_evidence": evidence}
         raw = call_provider_with_retry(provider, system_prompt, user_prompt, task)
-        memo_question = extract_json(raw)
         try:
+            memo_question = extract_json(raw)
             _validate_memo_marks(memo_question, question)
         except GenerationError as exc:
+            # Malformed JSON (e.g. an unescaped quote inside an embedded
+            # code sample corrupting the surrounding JSON string) is
+            # retry-eligible, same as a marks rejection - the model gets
+            # another attempt with a note naming exactly what was wrong,
+            # rather than aborting the whole memo on one bad sample.
             last_error = str(exc)
             continue
 
