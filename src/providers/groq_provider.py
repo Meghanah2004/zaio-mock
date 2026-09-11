@@ -41,12 +41,88 @@ cover every defect class observed so far.
 """
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from src.config import LLMSettings
 from src.providers.base import LLMProvider, LLMProviderError, is_retryable_status
 from src.security.config import SecurityConfig
 from src.security.redaction import redact_secrets
+
+_logger = logging.getLogger(__name__)
+
+_REASONING_EFFORT_MODEL_PREFIXES = ("openai/gpt-oss-",)
+"""Model families confirmed (installed Groq SDK's own
+completion_create_params.CompletionCreateParamsBase.reasoning_effort
+docstring, 2026-09-11) to accept the ``reasoning_effort`` chat-completion
+parameter: "openai/gpt-oss-20b and openai/gpt-oss-120b support 'low',
+'medium', or 'high'. 'medium' is the default value." (qwen3 models also
+support it under a different prefix/scheme, deliberately not included here
+- this project's supported/tested model is the gpt-oss family; adding
+qwen3 support later needs its own verification, not a speculative guess.)
+
+TOKEN AUDIT FINDING (2026-09-11), the single largest-potential lever found:
+every call before this change left ``reasoning_effort`` unset, so Groq
+defaulted openai/gpt-oss-120b to 'medium' reasoning for EVERY call -
+including well-specified, schema-constrained JSON-generation tasks (one
+exam question against explicit hard constraints; one memo against an
+explicit mark budget) that are answer-instructions-correctly tasks, not
+open-ended multi-step reasoning problems. Reasoning tokens are billed as
+part of completion_tokens/total_tokens (see CompletionUsage in the SDK)
+but are INVISIBLE in every char-based prompt/output estimate this audit
+otherwise relies on - they are the most plausible explanation for real
+production TPD usage (197,802/200,000 tokens observed exhausted after only
+a handful of real attempts) being far higher than visible-content-only
+estimates would predict.
+
+Set to 'low' here: this pipeline's own retry-with-explicit-correction-note
+architecture (grounding/novelty/marks rejections all regenerate with a
+note naming exactly what was wrong - see question_generator.py and
+memo_generator.py) is a deterministic safety net independent of reasoning
+depth, making a lower default a reasonable, bounded-risk choice rather
+than a blind one. UNVERIFIED IN THIS SESSION: no real Groq call was made
+to measure the actual before/after reasoning_tokens delta (out of scope -
+"do not consume Groq quota" was an explicit constraint on this audit) -
+the _log_usage diagnostic added in this same change will show the real
+reasoning_tokens count (previously always logged as None/absent, since it
+was never requested) on the next real generation, so this is a testable,
+evidence-verifiable claim, not an assumed one.
+"""
+
+
+def _model_supports_reasoning_effort(model: str) -> bool:
+    return model.startswith(_REASONING_EFFORT_MODEL_PREFIXES)
+
+
+def _log_usage(task: dict[str, Any], response: Any) -> None:
+    """Dev-diagnostic only (token audit, 2026-09-11): logs the REAL
+    prompt_tokens/completion_tokens/total_tokens/reasoning_tokens Groq
+    reports for this call, at DEBUG level - invisible under this project's
+    default logging.basicConfig(level=logging.INFO) (see api/app.py), so
+    this adds zero production log noise unless an operator explicitly
+    raises the log level for local diagnostics. Never logs prompt/response
+    CONTENT, never the API key - only the numeric usage counters and the
+    call's ``kind`` (e.g. "generate_section_question"), already a plain,
+    non-secret label the caller supplies via ``task``. Real numbers here
+    replace the char/4 estimates used throughout the token audit that
+    motivated this - see MAX_OUTCOME_CODES_SHOWN's docstring in
+    src/generation/question_generator.py for the audit itself.
+    """
+    usage = getattr(response, "usage", None)
+    if usage is None:
+        return
+    reasoning_tokens = None
+    details = getattr(usage, "completion_tokens_details", None)
+    if details is not None:
+        reasoning_tokens = getattr(details, "reasoning_tokens", None)
+    _logger.debug(
+        "groq usage kind=%s prompt_tokens=%s completion_tokens=%s total_tokens=%s reasoning_tokens=%s",
+        task.get("kind"),
+        getattr(usage, "prompt_tokens", None),
+        getattr(usage, "completion_tokens", None),
+        getattr(usage, "total_tokens", None),
+        reasoning_tokens,
+    )
 
 
 def _extract_retry_after(exc: Exception) -> float | None:
@@ -124,16 +200,32 @@ class GroqProvider(LLMProvider):
         )
 
     def generate(self, system_prompt: str, user_prompt: str, task: dict[str, Any]) -> str:
+        messages: list[Any] = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
         try:
-            response = self._client.chat.completions.create(
-                model=self._settings.model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-                max_completion_tokens=self._settings.max_tokens,
-                temperature=self._settings.temperature,
-            )
+            # Two explicit call shapes (never a **kwargs spread of a plain
+            # dict) so reasoning_effort/reasoning_format keep the SDK's own
+            # Literal[...] typing under mypy, instead of widening to a
+            # generic dict[str, str] that can't match the overloaded
+            # Completions.create signature statically.
+            if _model_supports_reasoning_effort(self._settings.model):
+                response = self._client.chat.completions.create(
+                    model=self._settings.model,
+                    messages=messages,
+                    max_completion_tokens=self._settings.max_tokens,
+                    temperature=self._settings.temperature,
+                    reasoning_effort="low",
+                    reasoning_format="hidden",
+                )
+            else:
+                response = self._client.chat.completions.create(
+                    model=self._settings.model,
+                    messages=messages,
+                    max_completion_tokens=self._settings.max_tokens,
+                    temperature=self._settings.temperature,
+                )
         except Exception as exc:  # broad on purpose: surface as a provider error, never leak the key
             # Defense-in-depth: redact any credential-shaped substring
             # before it can reach a log line or CLI error message, even
@@ -143,6 +235,8 @@ class GroqProvider(LLMProvider):
                 retryable=is_retryable_status(getattr(exc, "status_code", None)),
                 retry_after=_extract_retry_after(exc),
             ) from exc
+
+        _log_usage(task, response)
 
         choices = response.choices
         if not choices or not choices[0].message.content:

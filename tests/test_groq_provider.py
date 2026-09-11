@@ -254,6 +254,142 @@ def test_generic_sdk_exception_with_no_response_has_no_retry_after(monkeypatch):
     assert exc_info.value.retry_after is None
 
 
+def test_reasoning_effort_is_set_to_low_for_gpt_oss_120b(monkeypatch):
+    """Token audit finding (2026-09-11): openai/gpt-oss-120b defaults to
+    'medium' reasoning effort when unset (confirmed via the installed
+    SDK's own completion_create_params.py docstring), and reasoning tokens
+    are billed as part of completion_tokens/total_tokens but invisible in
+    the actual JSON output - this is the single largest-potential token
+    lever found in the audit. This test proves the parameter is actually
+    sent, not just documented as an intention."""
+    fake_client = MagicMock()
+    fake_response = MagicMock()
+    fake_response.choices = [MagicMock(message=MagicMock(content='{"ok": true}'))]
+    fake_client.chat.completions.create.return_value = fake_response
+    monkeypatch.setattr("groq.Groq", lambda **kwargs: fake_client)
+
+    provider = GroqProvider(_settings(model="openai/gpt-oss-120b"))
+    provider.generate("sys", "user", {"kind": "generate_section_question"})
+
+    _, kwargs = fake_client.chat.completions.create.call_args
+    assert kwargs["reasoning_effort"] == "low"
+    assert kwargs["reasoning_format"] == "hidden"
+
+
+def test_reasoning_effort_is_set_for_gpt_oss_20b_too(monkeypatch):
+    """Same model family (openai/gpt-oss-20b), confirmed supported by the
+    same SDK docstring - proves the prefix match isn't hardcoded to only
+    the exact 120b string."""
+    fake_client = MagicMock()
+    fake_response = MagicMock()
+    fake_response.choices = [MagicMock(message=MagicMock(content='{"ok": true}'))]
+    fake_client.chat.completions.create.return_value = fake_response
+    monkeypatch.setattr("groq.Groq", lambda **kwargs: fake_client)
+
+    provider = GroqProvider(_settings(model="openai/gpt-oss-20b"))
+    provider.generate("sys", "user", {"kind": "generate_section_question"})
+
+    _, kwargs = fake_client.chat.completions.create.call_args
+    assert kwargs["reasoning_effort"] == "low"
+
+
+def test_reasoning_effort_is_not_sent_for_an_unsupported_model(monkeypatch):
+    """Safety guard: a Groq model NOT confirmed to support reasoning_effort
+    (e.g. a future GROQ_MODEL configuration change to a non-reasoning
+    model) must never receive this parameter - an unsupported model could
+    reject the whole request with a 400 rather than silently ignoring an
+    unknown field. Omitting it entirely preserves this project's exact
+    pre-change behavior for anything outside the confirmed-supported
+    gpt-oss family."""
+    fake_client = MagicMock()
+    fake_response = MagicMock()
+    fake_response.choices = [MagicMock(message=MagicMock(content='{"ok": true}'))]
+    fake_client.chat.completions.create.return_value = fake_response
+    monkeypatch.setattr("groq.Groq", lambda **kwargs: fake_client)
+
+    provider = GroqProvider(_settings(model="llama-3.3-70b-versatile"))
+    provider.generate("sys", "user", {"kind": "generate_section_question"})
+
+    _, kwargs = fake_client.chat.completions.create.call_args
+    assert "reasoning_effort" not in kwargs
+    assert "reasoning_format" not in kwargs
+
+
+def test_usage_is_logged_at_debug_level_with_real_token_counts(monkeypatch, caplog):
+    """Dev-diagnostic feature (token audit, 2026-09-11): the real
+    prompt_tokens/completion_tokens/total_tokens Groq reports must be
+    logged at DEBUG - never printed, never at INFO or higher (see
+    test_usage_logging_produces_no_output_at_default_info_level below for
+    the "no production noise" half of this property)."""
+    import logging
+
+    fake_client = MagicMock()
+    fake_usage = MagicMock()
+    fake_usage.prompt_tokens = 2500
+    fake_usage.completion_tokens = 600
+    fake_usage.total_tokens = 3100
+    fake_usage.completion_tokens_details = MagicMock(reasoning_tokens=42)
+    fake_response = MagicMock()
+    fake_response.choices = [MagicMock(message=MagicMock(content='{"ok": true}'))]
+    fake_response.usage = fake_usage
+    fake_client.chat.completions.create.return_value = fake_response
+    monkeypatch.setattr("groq.Groq", lambda **kwargs: fake_client)
+
+    provider = GroqProvider(_settings())
+    with caplog.at_level(logging.DEBUG, logger="src.providers.groq_provider"):
+        provider.generate("sys", "user", {"kind": "generate_section_question"})
+
+    assert any("prompt_tokens=2500" in r.message for r in caplog.records)
+    assert any("completion_tokens=600" in r.message for r in caplog.records)
+    assert any("total_tokens=3100" in r.message for r in caplog.records)
+    assert any("reasoning_tokens=42" in r.message for r in caplog.records)
+    assert any("generate_section_question" in r.message for r in caplog.records)
+    # Never the API key or prompt/response content.
+    assert not any("sys" == r.message or "user" == r.message for r in caplog.records)
+    for record in caplog.records:
+        assert "gsk_fake" not in record.message
+
+
+def test_usage_logging_produces_no_output_at_default_info_level(monkeypatch, caplog):
+    """This project's default logging.basicConfig(level=logging.INFO) (see
+    api/app.py) must never see this diagnostic - zero production log
+    noise, per the "do not add noisy production logging" requirement."""
+    import logging
+
+    fake_client = MagicMock()
+    fake_usage = MagicMock()
+    fake_usage.prompt_tokens = 2500
+    fake_usage.completion_tokens = 600
+    fake_usage.total_tokens = 3100
+    fake_usage.completion_tokens_details = None
+    fake_response = MagicMock()
+    fake_response.choices = [MagicMock(message=MagicMock(content='{"ok": true}'))]
+    fake_response.usage = fake_usage
+    fake_client.chat.completions.create.return_value = fake_response
+    monkeypatch.setattr("groq.Groq", lambda **kwargs: fake_client)
+
+    provider = GroqProvider(_settings())
+    with caplog.at_level(logging.INFO, logger="src.providers.groq_provider"):
+        provider.generate("sys", "user", {"kind": "generate_section_question"})
+
+    assert caplog.records == []
+
+
+def test_usage_logging_tolerates_a_response_with_no_usage_field(monkeypatch):
+    """Some SDK/mock responses may not carry a usage object at all - this
+    must never raise or block the actual generation result."""
+    fake_client = MagicMock()
+    fake_response = MagicMock(spec=["choices"])  # no `usage` attribute at all
+    fake_response.choices = [MagicMock(message=MagicMock(content='{"ok": true}'))]
+    fake_client.chat.completions.create.return_value = fake_response
+    monkeypatch.setattr("groq.Groq", lambda **kwargs: fake_client)
+
+    provider = GroqProvider(_settings())
+    result = provider.generate("sys", "user", {"kind": "generate_section_question"})
+
+    assert result == '{"ok": true}'
+
+
 def test_missing_sdk_raises_a_clear_provider_error(monkeypatch):
     # Setting a module to None in sys.modules is the standard way to force
     # `import groq` to raise ImportError, simulating an environment where

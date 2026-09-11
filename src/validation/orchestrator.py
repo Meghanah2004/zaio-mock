@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from src.validation.answer_grounding_validator import validate_answer_grounding
 from src.validation.coverage_validator import validate_coverage
 from src.validation.grounding_validator import validate_grounding
 from src.validation.marks_validator import validate_marks
@@ -75,6 +76,18 @@ def run_all_validators(
         # check ran or passed (see src/validation/grounding_validator.py).
         grounding_report = validate_grounding(paper, chunks)
         for c in grounding_report.checks:
+            report.add(c)
+
+        # REWORK (real-generation audit, 2026-09-11): answer_grounding_
+        # validator.py existed and was tested in isolation but was never
+        # actually invoked here - the ANSWER side of grounding had no
+        # independent deterministic re-check in the real pipeline, only
+        # src.generation.memo_generator's generation-time self-check
+        # (_answer_grounding_ok). Same gating as question-side grounding
+        # immediately above (needs the same ingested corpus chunks), same
+        # "never trust the generation-time check alone" principle.
+        answer_grounding_report = validate_answer_grounding(memo, chunks)
+        for c in answer_grounding_report.checks:
             report.add(c)
 
     return report, novelty_result

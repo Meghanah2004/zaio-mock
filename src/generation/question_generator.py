@@ -100,13 +100,54 @@ def _build_question_marks_budget(section: dict[str, Any]) -> str:
     )
 
 
+MAX_OUTCOME_CODES_SHOWN = 10
+"""Caps how many of a section's FULL outcome codes are listed in the
+question-generation prompt (see _outcome_codes_line below) - a token-
+efficiency fix, NOT a validation change. Measured directly against the real
+blueprint (artifacts/blueprint.json): Section F alone carries 49 full
+outcome codes (KM-08/KM-09 span many Knowledge Topics) for a 5-mark
+section, costing ~477 tokens on this one prompt line alone - out of
+proportion to its actual purpose, which is to give the model a safe "menu"
+of codes it MAY additionally declare beyond section["required_outcomes"]
+(always shown in full, separately, via {required_outcome_codes} - never
+capped) if its content genuinely happens to exercise them.
+
+Capping what is SHOWN has zero effect on what is ACCEPTED:
+_normalize_question's hallucination check (below) compares the model's
+declared "outcomes" against ``set(section["outcomes"])`` - the real, full,
+UNCAPPED blueprint universe, read directly from ``section``, never from
+whatever subset this function chose to display. A model that happens to
+declare a real, valid code outside its shown sample is still accepted; only
+a genuinely invented code is still rejected, exactly as before this cap
+existed. Measured savings across all 6 real blueprint sections: ~560 tokens
+per paper (1,062 -> 502 tokens total for this one line, cap=10) - the
+single largest concrete per-paper reduction found in the 2026-09-11 token
+audit, entirely on redundant "extra menu" content the model rarely uses
+productively (see docs/DESIGN.md, "Outcome mapping: explicit subsets, not
+section-wide copies" for why the full list existed as a safety net in the
+first place, not a requirement to show it in full)."""
+
+
+def _outcome_codes_line(section: dict[str, Any]) -> str:
+    required = set(section.get("required_outcomes", section["outcomes"]))
+    pairs = list(zip(section["outcomes"], section["competencies"]))
+    required_pairs = [(code, title) for code, title in pairs if code in required]
+    extra_pairs = [(code, title) for code, title in pairs if code not in required]
+    budget_left = max(0, MAX_OUTCOME_CODES_SHOWN - len(required_pairs))
+    shown = required_pairs + extra_pairs[:budget_left]
+    line = "; ".join(f"{code} ({title})" for code, title in shown)
+    if len(shown) < len(pairs):
+        line += f"; ... ({len(pairs) - len(shown)} further valid codes for this section's modules exist and may also be declared if genuinely exercised)"
+    return line
+
+
 def _build_question_prompt(
     section: dict[str, Any], evidence: list[dict[str, Any]], retry_note: str = ""
 ) -> tuple[str, str]:
     template = load_prompt_template("generate_questions.txt")
     system_part, _, user_part = template.partition("USER (templated at call time):")
     system_prompt = system_part.replace("SYSTEM:", "", 1).strip()
-    outcome_lines = "; ".join(f"{code} ({title})" for code, title in zip(section["outcomes"], section["competencies"]))
+    outcome_lines = _outcome_codes_line(section)
 
     if evidence:
         evidence_lines = "\n".join(
