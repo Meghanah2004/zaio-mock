@@ -146,10 +146,26 @@ class SecurityConfig:
     read_rate_window_seconds: int = 60
 
     # -- API layer (api/) ----------------------------------------------------
-    cors_allowed_origins: str = "http://localhost:3000,http://localhost:5173"
+    cors_allowed_origins: str = (
+        "http://localhost:3000,http://localhost:5173,"
+        "https://zaio-sable.vercel.app,https://zaio-qwertyuiop12.vercel.app,"
+        "https://zaio-git-main-qwertyuiop12.vercel.app"
+    )
     """Comma-separated allow-list of origins for the deployed frontend. NEVER
     a bare "*" default - see api/app.py. Restrict to the real deployed
-    frontend origin(s) in production via the CORS_ALLOWED_ORIGINS env var."""
+    frontend origin(s) in production via the CORS_ALLOWED_ORIGINS env var.
+
+    REWORK (locked Phase 1 architecture, 2026-09-11): the canonical
+    deployment is Vercel React frontend + LOCAL Python backend (see
+    docs/DEPLOYMENT.md) - the browser at https://zaio-sable.vercel.app must
+    be able to call http://127.0.0.1:8000 directly. The three zaio-*.vercel.app
+    entries are this project's own STABLE Vercel aliases (production,
+    project, and git-branch - confirmed via `vercel inspect`; unlike a
+    per-deployment preview URL, these do not change on every push), added
+    alongside the pre-existing local dev-port defaults, never replacing
+    them. A local operator whose own .env already sets CORS_ALLOWED_ORIGINS
+    must add these same origins there too - an env var override replaces
+    this default entirely rather than extending it."""
     max_request_body_bytes: int = 16_384
     """Upper bound on the raw HTTP request body FastAPI/Starlette will read
     for any endpoint under api/ - rejects an oversized payload before it

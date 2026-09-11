@@ -19,6 +19,55 @@ container - see [Docker / any other platform](#docker--any-other-platform).
 Pick whichever applies and read the matching section; both are documented
 because both are real, not speculative.
 
+## Canonical Phase 1 architecture (2026-09-11): Vercel frontend + LOCAL backend
+
+**The real, full-pipeline generation path for Phase 1 is: React on Vercel,
+FastAPI/RAG/Groq/validation running LOCALLY**, not the Vercel-hosted Python
+backend below. Reason: the complete real-provider pipeline (RAG retrieval +
+Groq question generation + Groq memo generation + full validation) cannot
+reliably complete within Vercel Hobby's 300-second synchronous function
+limit under Groq's account-level TPM/TPD rate limits (see the September
+2026 production incident history in this repo's commit log) - solved by
+running the backend locally, where there is no platform execution-time
+ceiling, rather than by changing the architecture or the provider.
+
+The Vercel-hosted Python backend documented below **may remain deployed**
+(useful for a quick `/api/health` smoke test or MockProvider-backed demo of
+the UI without a local backend running) but is **not** the canonical
+generation path and should not be relied on for a real, full Groq
+generation.
+
+**To use the canonical path:**
+
+1. Start the local backend (see [Local development](API.md#local-development)
+   in `docs/API.md`): `uvicorn api.app:app --reload` - binds
+   `http://127.0.0.1:8000`, reads `GROQ_API_KEY`/`LLM_PROVIDER=groq` from
+   your local `.env`.
+2. Open the deployed frontend, `https://zaio-sable.vercel.app` - its
+   built-in `VITE_API_BASE_URL` fallback (see below) does NOT point at
+   your local backend by default (a production build with no
+   `VITE_API_BASE_URL` set falls back to same-origin, i.e. the Vercel
+   backend) - **a Vercel Production environment variable must be set on
+   the frontend service** for the deployed page to call your local
+   backend instead:
+   ```
+   VITE_API_BASE_URL=http://127.0.0.1:8000
+   ```
+   Setting this only makes sense for this project's own demo/evaluation
+   use (whoever views the deployed page needs their OWN local backend
+   running at that address) - it is not a general multi-tenant production
+   pattern. Per this repo's own standing rule, **this environment variable
+   change and the redeploy it requires are not performed automatically** -
+   see `SecurityConfig.cors_allowed_origins`'s default
+   (`src/security/config.py`), already updated to allow the
+   `zaio-sable.vercel.app` origin so the browser's CORS check does not
+   block this once `VITE_API_BASE_URL` is set. As documented above under
+   "Required Vercel environment variables," an env var change only applies
+   to a NEW deployment - a new deployment must be triggered after setting
+   this, and confirmed via `vercel inspect` to have picked it up.
+3. Confirm via the browser's network tab that `POST /api/generate` goes to
+   `127.0.0.1:8000`, not `zaio-sable.vercel.app`.
+
 ## Vercel deployment
 
 **Production**: `https://zaio-sable.vercel.app` (project `qwertyuiop12/zaio`).
